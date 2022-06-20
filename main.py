@@ -63,41 +63,56 @@ hours = 0
 night_hours = 0
 
 
-def cont_attendance_days(lst: list):
+def cont_days(lst: list):
     lst.remove('Х')
     c = Counter(lst)
+    print(c.keys())
     print(c)
+    absence_days = c['В']
+    vacation_days = c['ОТ']
+    medical_days = c['Б']
+    other_absence_days = c['ОВ'] + c['У'] + c['ДО'] + c['К'] + c['ПР'] + c['Р'] + c['ОЖ'] + c['ОЗ'] + c['Г'] + c['НН'] + \
+                         c['НБ']
+    attendance_days = c.total() - absence_days - vacation_days - medical_days - other_absence_days
+
+    return attendance_days, absence_days, vacation_days, medical_days, other_absence_days
+
+
+def cont_hours(lst: list):
+    lst.remove('Х')
+    hours = 0
+    night_hours = 0
+    c = Counter(lst)
     print(c)
-    print(c.total())
-    print(c['В'])
+    for i in c.keys():
+        if isinstance(i, float):
+            hours += i * c[i]
+        elif i == '8/20':
+            hours += 12 * c[i]
+        elif i in ['20/','20/24']:
+            hours += 4 * c[i]
+            night_hours += 2 * c[i]
+        elif i in ['/8 20/24','0/8 20/','/8 20/']:
+            hours += 12 * c[i]
+            night_hours += 8 * c[i]
+        elif i in ['0/8','/8']:
+            hours += 8 * c[i]
+            night_hours += 6 * c[i]
 
 
-
-# def intenize_from_list(lst: list):
-#     new_lst = list()
-#     for string in lst:
-#         try:
-#             new_lst.append(float(string.replace(",", ".")))
-#         except ValueError:
-#             new_lst.append(string)
-#     print(new_lst)
-#     return new_lst
+    print(hours)
+    print(night_hours)
+    return hours, night_hours
 
 
-attend_days = 0
-
-
-def cont_days(cells_list: list):
-    for item in cells_list:
-        attend_days = item.count
-
-    pass
-
+# attendance_days, absence_days, vacation_days, medical_days, other_absence_days = cont_days(lst)
 
 if __name__ == '__main__':
     # intenize_from_list(line_of_workers['Буржинский А.В. Эл.монтер ЩУ ГТУ'])
     # intenize_from_list(lines_of_workers['Канева М.А. Уборщица '])
     # cont_attendance_days(lines_of_workers['Канева М.А. Уборщица '])
-    # cont_attendance_days(lines_of_workers['Буржинский А.В. Эл.монтер ЩУ ГТУ'])
-    print(cont_attendance_days(
-        normalize_cells_list(get_lines_of_workers_dict(DEM_sheet)['Буржинский А.В. Эл.монтер ЩУ ГТУ'])))
+    # cont_attendance_days(lines_of_workers['Баранов Р.А. Эл.монтер ЩУ ГТУ'])
+    # print(cont_days(
+    #     normalize_cells_list(get_lines_of_workers_dict(DEM_sheet)['Баранов Р.А. Эл.монтер ЩУ ГТУ'])))
+    print(cont_hours(
+        normalize_cells_list(get_lines_of_workers_dict(DEM_sheet)['Баранов Р.А. Эл.монтер ЩУ ГТУ'])))
