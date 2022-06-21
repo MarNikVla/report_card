@@ -87,9 +87,22 @@ def count_hours(lst: list):
     return hours, night_hours
 
 
-def get_cells_to_fill(cell_index:str):
 
+def get_cells_to_fill(sheet, cell_index: str):
+    print(sheet[cell_index])
+    print(sheet[cell_index].offset(row=0, column=17))
+    print(sheet[cell_index].offset(row=0, column=29))
+    # cell_range = sheet[sheet[cell_index].offset(row=1, column=17).coordinate:sheet[cell_index].offset(row=1,
+    #                                                                                                   column=29).coordinate]
+    # print(cell_range)
+    # return lines_of_working_days
+    sheet[cell_index].offset(row=0, column=17).value = count_days(normalize_cells_list(
+            get_lines_of_working_days(DEM_sheet)[cell_index]))[0]
+
+    # sheet[cell_index].offset(row=0, column=17).value = 4
+    wb.save('document.xlsx')
     pass
+
 
 def write_cells():
     pass
@@ -100,9 +113,10 @@ if __name__ == '__main__':
     # intenize_from_list(lines_of_workers['Канева М.А. Уборщица '])
     # cont_attendance_days(lines_of_workers['Канева М.А. Уборщица '])
     # cont_attendance_days(lines_of_workers['Баранов Р.А. Эл.монтер ЩУ ГТУ'])
-    print(count_days(
-        normalize_cells_list(
-            get_lines_of_working_days(DEM_sheet)['B13'])))
+    # print(count_days(
+    #     normalize_cells_list(
+    #         get_lines_of_working_days(DEM_sheet)['B13'])))
     # print(count_hours(
     #     normalize_cells_list(
-    #         get_lines_of_working_days(DEM_sheet)['Баранов Р.А. Эл.монтер ЩУ ГТУ'])))
+    #         get_lines_of_working_days(DEM_sheet)[15])))
+    print(get_cells_to_fill(DEM_sheet, 'B13'))
