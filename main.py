@@ -6,9 +6,9 @@ import re
 INITIAL_ROW_OF_NAMES = 13
 FINAL_ROW_OF_NAMES = 49
 COLUMN_OF_NAMES = 2
-REPORT_CARD = 'test.xlsx'
+REPORT_CARD_FILE = 'test.xlsx'
 
-wb = load_workbook(filename=REPORT_CARD)
+wb = load_workbook(filename=REPORT_CARD_FILE)
 machinist_sheet_name, DEM_sheet_name, reason_sheet_name = wb.sheetnames
 
 machinist_sheet, DEM_sheet, reason_of_absence_sheet = wb[machinist_sheet_name], \
@@ -16,8 +16,8 @@ machinist_sheet, DEM_sheet, reason_of_absence_sheet = wb[machinist_sheet_name], 
                                                       wb[reason_sheet_name]
 
 
-def get_lines_of_workers_dict(sheet) -> dict:
-    lines_of_workers_dict = dict()
+def get_lines_of_working_days(sheet) -> dict:
+    lines_of_working_days = dict()
 
     for col in sheet.iter_cols(min_row=INITIAL_ROW_OF_NAMES,
                                max_row=FINAL_ROW_OF_NAMES,
@@ -25,20 +25,13 @@ def get_lines_of_workers_dict(sheet) -> dict:
                                max_col=COLUMN_OF_NAMES):
         for cell in col:
             if cell.value is not None:
-                lines_of_workers_dict[cell.value] = \
+                lines_of_working_days[cell.coordinate] = \
                     [cell.offset(row=i, column=j).value for i in [0, 1] for j in range(1, 17)]
-
-    return lines_of_workers_dict
-
-
-def normalize_lines_of_workers_dict(raw_dict: dict):
-    normalized_dict = dict()
-    for key, value in raw_dict.items():
-        normalized_dict[key] = normalize_cells_list(value)
-    return normalized_dict
+    print(lines_of_working_days)
+    return lines_of_working_days
 
 
-def normalize_cells_list(cells_list: list[str]):
+def normalize_cells_list(cells_list: list[str]) -> list:
     new_cells_list = list()
     for cell in cells_list:
         if cell is not None:
@@ -93,8 +86,15 @@ def count_hours(lst: list):
     print(night_hours)
     return hours, night_hours
 
+
+def get_cells_to_fill(cell_index:str):
+
+    pass
+
 def write_cells():
     pass
+
+
 if __name__ == '__main__':
     # intenize_from_list(line_of_workers['Буржинский А.В. Эл.монтер ЩУ ГТУ'])
     # intenize_from_list(lines_of_workers['Канева М.А. Уборщица '])
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     # cont_attendance_days(lines_of_workers['Баранов Р.А. Эл.монтер ЩУ ГТУ'])
     print(count_days(
         normalize_cells_list(
-            get_lines_of_workers_dict(DEM_sheet)['Баранов Р.А. Эл.монтер ЩУ ГТУ'])))
-    print(count_hours(
-        normalize_cells_list(
-            get_lines_of_workers_dict(DEM_sheet)['Баранов Р.А. Эл.монтер ЩУ ГТУ'])))
+            get_lines_of_working_days(DEM_sheet)['B13'])))
+    # print(count_hours(
+    #     normalize_cells_list(
+    #         get_lines_of_working_days(DEM_sheet)['Баранов Р.А. Эл.монтер ЩУ ГТУ'])))
