@@ -217,6 +217,30 @@ def get_hours_on_holidays(sheet, name_cell_index) -> int:
     hours_on_holidays = count_hours(list(compress(normalize_cells_list, matrix_of_holidays)))['hours']
     return hours_on_holidays
 
+def get_norm_of_hours_list(sheet):
+
+    norm_of_hours_list = list()
+
+    norm_of_hours_40_cell= 'AH8'
+    norm_of_hours_36_cell = 'AH9'
+    norm_of_hours_28_cell = 'AH10'
+    min_row = 8
+    min_col = 34
+    for col in sheet.iter_rows(min_row=min_row,
+                               max_row=min_row + 2,
+                               min_col=min_col,
+                               max_col=min_col):
+        for cell in col:
+            if cell is not None:
+                try:
+                    new_cell = float(cell.value.replace(",", "."))
+                except AttributeError:
+                    new_cell = cell.value
+                norm_of_hours_list.append(new_cell)
+
+    print(norm_of_hours_list)
+
+    pass
 
 if __name__ == '__main__':
     # print(count_days(
@@ -226,11 +250,11 @@ if __name__ == '__main__':
     #     normalize_cells_list(
     #         get_lines_of_working_days(DEM_sheet)[15])))
     # print(write_days_to_file(DEM_sheet, 'B13'))
-    print(save_file(DEM_sheet))
+    # print(save_file(DEM_sheet))
     # print(write_hours_to_file(DEM_sheet, 'B13'))
     # print(get_matrix_of_holidays(DEM_sheet))
     # print(len(get_matrix_of_holidays(DEM_sheet)),
     #       len(get_normalize_cells_list(get_lines_of_working_days(DEM_sheet)['B13'])))
     # print(get_normalize_cells_list(get_lines_of_working_days(DEM_sheet)['B13']))
 
-    print(get_hours_on_holidays(DEM_sheet, 'B13'))
+    print(get_norm_of_hours_list(DEM_sheet))
