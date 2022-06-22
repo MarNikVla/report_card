@@ -1,5 +1,5 @@
 from functools import lru_cache
-from itertools import chain, repeat
+from itertools import compress
 from openpyxl import load_workbook
 from collections import Counter
 import re
@@ -18,37 +18,50 @@ machinist_sheet, DEM_sheet, reason_of_absence_sheet = wb[machinist_sheet_name], 
 
 
 @lru_cache
-def get_lines_of_working_days(sheet) -> dict:
-    lines_of_working_days = dict()
+def get_lines_of_working_days_dict(sheet) -> dict:
+    lines_of_working_days_dict = dict()
 
+    # Iteration on column of names
     for col in sheet.iter_cols(min_row=INITIAL_ROW_OF_NAMES,
                                max_row=FINAL_ROW_OF_NAMES,
                                min_col=COLUMN_OF_NAMES,
                                max_col=COLUMN_OF_NAMES):
         for cell in col:
             if cell.value is not None:
-                lines_of_working_days[cell.coordinate] = \
+                lines_of_working_days_dict[cell.coordinate] = \
                     [cell.offset(row=i, column=j).value for i in [0, 1] for j in range(1, 17)]
+    # for debug
+    # print(f'lines_of_working_days_dict: {lines_of_working_days_dict}')
+    return lines_of_working_days_dict
 
-    return lines_of_working_days
 
+def get_normalize_cells_list(raw_cells_list: list[str]) -> list:
+    """
 
-def get_normalize_cells_list(cells_list: list[str]) -> list:
+    :param raw_cells_list: list[str] of working days of one worker
+    :return: list[str|float] str: without whitespaces or float type if it's possible and remove elem with 'Х' value
+    """
     new_cells_list = list()
-    for cell in cells_list:
+    for cell in raw_cells_list:
         if cell is not None:
             try:
                 new_cell = float(cell.replace(",", "."))
             except ValueError:
+                # remove whitespaces
                 new_cell = re.sub(r'\s+', '', cell)
             new_cells_list.append(new_cell)
-
+    # remove elem with 'Х'
     new_cells_list.remove('Х')
     return new_cells_list
 
 
-def count_days(lst: list) -> dict:
-    counter = Counter(lst)
+def count_days(normalized_list: list) -> dict:
+    """
+
+    :param normalized_list: list returned from get_normalize_cells_list()
+    :return:
+    """
+    counter = Counter(normalized_list)
     days_dict = dict()
 
     absence_days = counter['В']
@@ -58,9 +71,8 @@ def count_days(lst: list) -> dict:
     other_absence_days = sum(
         [counter[key] for key in ['ОВ', 'У', 'ДО', 'К', 'ПР', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ']])
     attendance_days = sum(
-        counter.values()) - (
-                                  absence_days + vacation_days + medical_days +
-                                  other_absence_days + absence_paid_days)
+        counter.values()) - (absence_days + vacation_days + medical_days +
+                             other_absence_days + absence_paid_days)
 
     days_dict['attendance_days'] = attendance_days or None
     days_dict['absence_days'] = absence_days or None
@@ -72,10 +84,15 @@ def count_days(lst: list) -> dict:
     return days_dict
 
 
-def count_hours(lst: list) -> dict:
+def count_hours(normalized_list: list) -> dict:
+    """
+
+    :param normalized_list: list returned from get_normalize_cells_list()
+    :return: dict of night hours, days hours of work
+    """
     hours = 0
     night_hours = 0
-    counter = Counter(lst)
+    counter = Counter(normalized_list)
     hours_dict = dict()
     for i in counter.keys():
         if isinstance(i, float):
@@ -104,104 +121,104 @@ def count_hours(lst: list) -> dict:
     return hours_dict
 
 
-def write_days_to_file(sheet, cell_index: str):
-    print(sheet[cell_index])
-    print(sheet[cell_index].offset(row=0, column=17))
-    print(sheet[cell_index].offset(row=0, column=29))
-    lines_of_working_days = get_lines_of_working_days(sheet)[cell_index]
+def write_days_to_file(sheet, worker_cell_index: str):
+    offset_row = 0
+    offset_column_attendance = 17
+    offset_column_absence = 22
+    offset_column_vacation = 23
+    offset_column_medical = 24
+    offset_column_other_absence = 25
+    offset_column_other_absence_paid = 26
+
+    lines_of_working_days = get_lines_of_working_days_dict(sheet)[worker_cell_index]
     normalize_cells_list = get_normalize_cells_list(lines_of_working_days)
     days = count_days(normalize_cells_list)
 
+    # writing cells
     # cell of attendance_days = cell_index.offset(row=0, column=17)
-    sheet[cell_index].offset(row=0, column=17).value = days['attendance_days']
-
-    # cell of absence_days = cell_index.offset(row=0, column=22)
-    sheet[cell_index].offset(row=0, column=22).value = days['absence_days']
-
-    # cell of vacation_days = cell_index.offset(row=0, column=23)
-    sheet[cell_index].offset(row=0, column=23).value = days['vacation_days']
-
-    # cell of medical_days = cell_index.offset(row=0, column=24)
-    sheet[cell_index].offset(row=0, column=24).value = days['medical_days']
-
-    # cell of other_absence_days = cell_index.offset(row=0, column=25)
-    sheet[cell_index].offset(row=0, column=25).value = days['other_absence_days']
-
-    # cell of absence_paid_days = cell_index.offset(row=0, column=26)
-    sheet[cell_index].offset(row=0, column=26).value = days['absence_paid_days']
-
-    # wb.save('document.xlsx')
-    pass
+    sheet[worker_cell_index].offset(row=offset_row, column=offset_column_attendance).value = days['attendance_days']
+    sheet[worker_cell_index].offset(row=offset_row, column=offset_column_absence).value = days['absence_days']
+    sheet[worker_cell_index].offset(row=offset_row, column=offset_column_vacation).value = days['vacation_days']
+    sheet[worker_cell_index].offset(row=offset_row, column=offset_column_medical).value = days['medical_days']
+    sheet[worker_cell_index].offset(row=offset_row, column=offset_column_other_absence).value = days[
+        'other_absence_days']
+    sheet[worker_cell_index].offset(row=offset_row, column=offset_column_other_absence_paid).value = days[
+        'absence_paid_days']
 
 
-def write_hours_to_file(sheet, cell_index: str):
-    print(sheet[cell_index])
-    print(sheet[cell_index].offset(row=0, column=17))
-    print(sheet[cell_index].offset(row=0, column=29))
-    lines_of_working_days = get_lines_of_working_days(sheet)[cell_index]
-    normalize_cells_list = get_normalize_cells_list(lines_of_working_days)
+def write_hours_to_file(sheet, worker_cell_index: str):
+    offset_row = 0
+    offset_column_hours = 18
+    offset_column_night_hours = 20
+
+    lines_of_worker_days_list = get_lines_of_working_days_dict(sheet)[worker_cell_index]
+    normalize_cells_list = get_normalize_cells_list(lines_of_worker_days_list)
     hours = count_hours(normalize_cells_list)
 
+    # writing cells
     # cell of hours = cell_index.offset(row=0, column=18)
-    sheet[cell_index].offset(row=0, column=18).value = hours['hours']
-
-    # cell of night_hours = cell_index.offset(row=0, column=22)
-    sheet[cell_index].offset(row=0, column=20).value = hours['night_hours']
-
-    # wb.save('document.xlsx')
-    pass
+    sheet[worker_cell_index].offset(row=offset_row, column=offset_column_hours).value = hours['hours']
+    sheet[worker_cell_index].offset(row=offset_row, column=offset_column_night_hours).value = hours['night_hours']
 
 
-def write_to_file(sheet):
-    lines_of_working_days_dict = get_lines_of_working_days(sheet)
-    for key in lines_of_working_days_dict.keys():
-        write_days_to_file(sheet, key)
-        write_hours_to_file(sheet, key)
+def write_holidays_to_file(sheet, worker_cell_index: str):
+    offset_row = 0
+    offset_column_holidays_hours = 21
+
+    matrix_of_holidays = get_matrix_of_holidays(sheet)
+    normalize_cells_list = get_normalize_cells_list(get_lines_of_working_days_dict(sheet)[worker_cell_index])
+
+    hours_on_holidays = count_hours(list(compress(normalize_cells_list, matrix_of_holidays)))['hours']
+
+    # writing cells
+    # cell of hours = cell_index.offset(row=0, column=18)
+    sheet[worker_cell_index].offset(row=offset_row, column=offset_column_holidays_hours).value = hours_on_holidays
+
+
+def save_file(sheet):
+    lines_of_working_days_dict = get_lines_of_working_days_dict(sheet)
+    for worker_cell_index in lines_of_working_days_dict.keys():
+        write_days_to_file(sheet, worker_cell_index)
+        write_hours_to_file(sheet, worker_cell_index)
+        write_holidays_to_file(sheet, worker_cell_index)
 
     # write_days_to_file(sheet):
     wb.save('document.xlsx')
-    pass
 
-def get_holidays(sheet):
+
+def get_matrix_of_holidays(sheet) -> list:
     # days_range = sheet['C10':'R11']
     # print(days_range)
-    lines_of_days = dict()
+    matrix_of_holidays = list()
     min_row = 10
     min_col = 3
     for col in sheet.iter_rows(min_row=min_row,
-                               max_row=min_row+1,
+                               max_row=min_row + 1,
                                min_col=min_col,
-                               max_col=min_col+15):
+                               max_col=min_col + 15):
         for cell in col:
-            # print(cell.color)
-            if cell.value is not None:
-                lines_of_days[cell.coordinate] = cell.value
+
+            if cell.value == 'Х':
+                pass
+            # if cell.color == standard.red (holiday)
+            elif cell.fill.start_color.index == 'FFFF0000':
+                matrix_of_holidays.append(1)
+            else:
+                matrix_of_holidays.append(0)
+
+    # print(len(matrix_of_holidays))
+    return matrix_of_holidays
 
 
-    return lines_of_days
+def get_hours_on_holidays(sheet, name_cell_index) -> int:
+    matrix_of_holidays = get_matrix_of_holidays(sheet)
+    normalize_cells_list = get_normalize_cells_list(get_lines_of_working_days_dict(sheet)[name_cell_index])
 
-    pass
-# def get_lines_of_working_days(sheet) -> dict:
-#     lines_of_working_days = dict()
-#
-#     for col in sheet.iter_cols(min_row=INITIAL_ROW_OF_NAMES,
-#                                max_row=FINAL_ROW_OF_NAMES,
-#                                min_col=COLUMN_OF_NAMES,
-#                                max_col=COLUMN_OF_NAMES):
-#         for cell in col:
-#             if cell.value is not None:
-#                 lines_of_working_days[cell.coordinate] = \
-#                     [cell.offset(row=i, column=j).value for i in [0, 1] for j in range(1, 17)]
-#
-#     return lines_of_working_days
-
+    hours_on_holidays = count_hours(list(compress(normalize_cells_list, matrix_of_holidays)))['hours']
+    return hours_on_holidays
 
 
 if __name__ == '__main__':
-    # intenize_from_list(line_of_workers['Буржинский А.В. Эл.монтер ЩУ ГТУ'])
-    # intenize_from_list(lines_of_workers['Канева М.А. Уборщица '])
-    # cont_attendance_days(lines_of_workers['Канева М.А. Уборщица '])
-    # cont_attendance_days(lines_of_workers['Баранов Р.А. Эл.монтер ЩУ ГТУ'])
     # print(count_days(
     #     normalize_cells_list(
     #         get_lines_of_working_days(DEM_sheet)['B13'])))
@@ -209,6 +226,11 @@ if __name__ == '__main__':
     #     normalize_cells_list(
     #         get_lines_of_working_days(DEM_sheet)[15])))
     # print(write_days_to_file(DEM_sheet, 'B13'))
-    print(write_to_file(DEM_sheet))
+    print(save_file(DEM_sheet))
     # print(write_hours_to_file(DEM_sheet, 'B13'))
-    # print(get_holidays(DEM_sheet))
+    # print(get_matrix_of_holidays(DEM_sheet))
+    # print(len(get_matrix_of_holidays(DEM_sheet)),
+    #       len(get_normalize_cells_list(get_lines_of_working_days(DEM_sheet)['B13'])))
+    # print(get_normalize_cells_list(get_lines_of_working_days(DEM_sheet)['B13']))
+
+    print(get_hours_on_holidays(DEM_sheet, 'B13'))
