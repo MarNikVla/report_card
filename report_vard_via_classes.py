@@ -1,4 +1,6 @@
+from collections import Counter
 from copy import deepcopy
+from functools import cached_property
 
 from openpyxl import load_workbook
 
@@ -78,7 +80,7 @@ class Worker(Sheet):
                     cells_range.append(cell.value)
         return cells_range
 
-    def is_28_hours(self):
+    def is_28_hours_week(self):
         color_standard_orange = 'FFFFC000'
         return self.cell.fill.start_color.index == color_standard_orange
 
@@ -87,14 +89,38 @@ class Worker(Sheet):
         return super(Worker, self).work_days_matrix[:len(self.cells_range)]
 
     def normalize_workdays(self):
-        days_to_remove = ['ОТ','У','ДО','Б','К','Р','ОЖ','ОЗ','Г','НН','НБ']
-        normalize_workdays= deepcopy(self.work_days_matrix)
+        days_to_remove = ['ОТ', 'У', 'ДО', 'Б', 'К', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ', 'НОД']
+        normalize_workdays = deepcopy(self.work_days_matrix)
         for index, cell in enumerate(self.cells_range):
             if cell in days_to_remove:
                 normalize_workdays[index] = 0
-            normalize_workdays
         return normalize_workdays
 
+    @cached_property
+    def counter(self):
+        return Counter(self.normalize_workdays())
+
+    def norm_of_hours(self):
+        counter = Counter(self.normalize_workdays())
+        duration_of_day = 8
+        if self.is_28_hours_week():
+            duration_of_day = 5.6
+        duration_of_short_day = duration_of_day - 1
+        norm_of_hours = counter['РД'] * duration_of_day + counter['КД'] * duration_of_short_day
+        return norm_of_hours
+
+    def get_vacation_days(self):
+        return self.counter['OT']
+
+    def get_medical_days(self):
+        return self.counter['Б']
+
+    def get_other_days_off(self):
+        return sum(
+            [self.counter[key] for key in ['ОВ', 'У', 'ДО', 'К', 'ПР', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ']])
+
+    def get_NOD_days(self):
+        return self.counter['НОД']
 
 
 worker = Worker('B13', DEM_sheet)
@@ -102,7 +128,6 @@ worker_women = Worker('B35', DEM_sheet)
 
 print(worker)
 print(worker.cells_range)
-print(len(worker))
 print(worker.work_days_matrix)
-print(worker_women.is_28_hours())
 print(worker.normalize_workdays())
+print(worker.norm_of_hours())
