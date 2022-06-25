@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from openpyxl import load_workbook
 
 REPORT_CARD_FILE = 'test.xlsx'
@@ -49,6 +51,9 @@ class Sheet:
                     work_days_matrix.append(self._type_of_day(cell))
         return work_days_matrix
 
+    def __str__(self):
+        return f'{self.sheet}'
+
 
 class Worker(Sheet):
     def __init__(self, cell_index, sheet):
@@ -77,6 +82,19 @@ class Worker(Sheet):
         color_standard_orange = 'FFFFC000'
         return self.cell.fill.start_color.index == color_standard_orange
 
+    @property
+    def work_days_matrix(self):
+        return super(Worker, self).work_days_matrix[:len(self.cells_range)]
+
+    def normalize_workdays(self):
+        days_to_remove = ['ОТ','У','ДО','Б','К','Р','ОЖ','ОЗ','Г','НН','НБ']
+        normalize_workdays= deepcopy(self.work_days_matrix)
+        for index, cell in enumerate(self.cells_range):
+            if cell in days_to_remove:
+                normalize_workdays[index] = 0
+            normalize_workdays
+        return normalize_workdays
+
 
 
 worker = Worker('B13', DEM_sheet)
@@ -87,3 +105,4 @@ print(worker.cells_range)
 print(len(worker))
 print(worker.work_days_matrix)
 print(worker_women.is_28_hours())
+print(worker.normalize_workdays())
