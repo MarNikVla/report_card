@@ -41,7 +41,7 @@ class Sheet:
         return working_day
 
     @cached_property
-    def work_days_matrix(self):
+    def _work_days_matrix(self):
         first_day_of_month = self.sheet['C10']
         last_day_of_month = self.sheet['R11']
         work_days_matrix = list()
@@ -57,6 +57,8 @@ class Sheet:
 
     def __str__(self):
         return f'{self.sheet}'
+
+
 
 
 class Worker(Sheet):
@@ -88,13 +90,13 @@ class Worker(Sheet):
         return self.cell.fill.start_color.index == color_standard_orange
 
     @property
-    def work_days_matrix(self):
-        return super(Worker, self).work_days_matrix[:len(self.cells_range) + 1]
+    def _work_days_matrix(self):
+        return super(Worker, self)._work_days_matrix[:len(self.cells_range) + 1]
 
     @cached_property
-    def normalize_workdays(self):
+    def _normalize_workdays(self):
         days_to_remove = ['ОТ', 'У', 'ДО', 'Б', 'К', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ', 'НОД']
-        normalize_workdays = deepcopy(self.work_days_matrix)
+        normalize_workdays = deepcopy(self._work_days_matrix)
         for index, cell in enumerate(self.cells_range):
             if cell in days_to_remove:
                 normalize_workdays[index] = 0
@@ -102,7 +104,7 @@ class Worker(Sheet):
 
     @cached_property
     def counter_of_days(self):
-        return Counter(self.normalize_workdays)
+        return Counter(self._normalize_workdays)
 
     @cached_property
     def norm_of_hours(self):
@@ -130,8 +132,15 @@ class Worker(Sheet):
         return sum(
             [self.counter_of_days[key] for key in ['ОВ', 'У', 'ДО', 'К', 'ПР', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ']])
 
+    # def get_attendance_days(self):
+    #     attendance_days = sum(
+    #         counter.values()) - (absence_days + vacation_days + medical_days +
+    #                              other_absence_days + absence_paid_days)
+    #     return self.counter_of_days['В']
+
+
     @property
-    def prepared_range(self):
+    def _prepared_range(self):
         new_cells_list = list()
         for cell in self.cells_range:
             if cell is not None:
@@ -172,21 +181,34 @@ class Worker(Sheet):
         return {'night_hours': night_hours, 'day_hours': day_hours}
 
     def get_day_hours(self):
-        count_day_hours = self.count_hours(self.prepared_range)['day_hours']
+        count_day_hours = self.count_hours(self._prepared_range)['day_hours']
         return count_day_hours
 
     def get_night_hours(self):
-        count_night_hours = self.count_hours(self.prepared_range)['night_hours']
+        count_night_hours = self.count_hours(self._prepared_range)['night_hours']
         return count_night_hours
 
     def get_holidays(self):
         holidays_range = list()
-        for i, cell in enumerate(self.prepared_range):
-            if worker.normalize_workdays[i] == 'П':
+        for i, cell in enumerate(self._prepared_range):
+            if worker._normalize_workdays[i] == 'П':
                 holidays_range.append(cell)
         count_holiday_hours = self.count_hours(holidays_range)['day_hours']
         return count_holiday_hours
 
+    def get_overwork(self):
+        return self.get_day_hours() - self.norm_of_hours
+
+    # def fill_sheet(self):
+    #     offset_row = 0
+    #     offset_column_attendance = 17
+    #     offset_column_absence = 22
+    #     offset_column_vacation = 23
+    #     offset_column_medical = 24
+    #     offset_column_other_absence = 25
+    #     offset_column_other_absence_paid = 26
+    #     self.sheet[self.cell].offset(row=offset_row, column=offset_column_attendance).value =
+    #     pass
 
 worker = Worker('B13', DEM_sheet)
 worker_women = Worker('B35', DEM_sheet)
@@ -198,4 +220,5 @@ print(worker)
 print(worker.norm_of_hours)
 print(worker.get_day_hours())
 print(worker.get_night_hours())
-print(worker.get_holidays())
+print(worker.get_overwork())
+
