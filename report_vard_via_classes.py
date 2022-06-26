@@ -1,3 +1,4 @@
+import re
 from collections import Counter
 from copy import deepcopy
 from functools import cached_property
@@ -39,7 +40,7 @@ class Sheet:
             return short_day
         return working_day
 
-    @property
+    @cached_property
     def work_days_matrix(self):
         first_day_of_month = self.sheet['C10']
         last_day_of_month = self.sheet['R11']
@@ -49,8 +50,9 @@ class Sheet:
                                         min_col=first_day_of_month.column,
                                         max_col=last_day_of_month.column):
             for cell in row:
-                if cell.value not in (None, 'Х'):
+                if cell.value not in (None, 'X'):
                     work_days_matrix.append(self._type_of_day(cell))
+        # print('fsdfs', len(work_days_matrix), work_days_matrix)
         return work_days_matrix
 
     def __str__(self):
@@ -80,14 +82,16 @@ class Worker(Sheet):
                     cells_range.append(cell.value)
         return cells_range
 
+    @cached_property
     def is_28_hours_week(self):
         color_standard_orange = 'FFFFC000'
         return self.cell.fill.start_color.index == color_standard_orange
 
     @property
     def work_days_matrix(self):
-        return super(Worker, self).work_days_matrix[:len(self.cells_range)]
+        return super(Worker, self).work_days_matrix[:len(self.cells_range) + 1]
 
+    @cached_property
     def normalize_workdays(self):
         days_to_remove = ['ОТ', 'У', 'ДО', 'Б', 'К', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ', 'НОД']
         normalize_workdays = deepcopy(self.work_days_matrix)
@@ -97,37 +101,101 @@ class Worker(Sheet):
         return normalize_workdays
 
     @cached_property
-    def counter(self):
-        return Counter(self.normalize_workdays())
+    def counter_of_days(self):
+        return Counter(self.normalize_workdays)
 
+    @cached_property
     def norm_of_hours(self):
-        counter = Counter(self.normalize_workdays())
+        counter = self.counter_of_days
         duration_of_day = 8
-        if self.is_28_hours_week():
+        if self.is_28_hours_week:
             duration_of_day = 5.6
         duration_of_short_day = duration_of_day - 1
         norm_of_hours = counter['РД'] * duration_of_day + counter['КД'] * duration_of_short_day
         return norm_of_hours
 
+    def get_weekends(self):
+        return self.counter_of_days['В']
+
     def get_vacation_days(self):
-        return self.counter['OT']
+        return self.counter_of_days['OT']
 
     def get_medical_days(self):
-        return self.counter['Б']
+        return self.counter_of_days['Б']
+
+    def get_NOD_days(self):
+        return self.counter_of_days['НОД']
 
     def get_other_days_off(self):
         return sum(
-            [self.counter[key] for key in ['ОВ', 'У', 'ДО', 'К', 'ПР', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ']])
+            [self.counter_of_days[key] for key in ['ОВ', 'У', 'ДО', 'К', 'ПР', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ']])
 
-    def get_NOD_days(self):
-        return self.counter['НОД']
+    @property
+    def prepared_range(self):
+        new_cells_list = list()
+        for cell in self.cells_range:
+            if cell is not None:
+                try:
+                    new_cell = float(cell.replace(",", "."))
+                except ValueError:
+                    # remove whitespaces
+                    new_cell = re.sub(r'\s+', '', cell)
+                new_cells_list.append(new_cell)
+        return new_cells_list
+
+    @staticmethod
+    def count_hours(cells_range):
+        day_hours = 0
+        night_hours = 0
+        counter_of_hours = Counter(cells_range)
+        for i in counter_of_hours.keys():
+            if isinstance(i, float):
+                day_hours += i * counter_of_hours[i]
+            elif i == '8/20':
+                day_hours += 12 * counter_of_hours[i]
+            elif i in ['20/', '20/24']:
+                day_hours += 4 * counter_of_hours[i]
+                night_hours += 2 * counter_of_hours[i]
+            elif i in ['/820/24', '0/820/', '/820/']:
+                day_hours += 12 * counter_of_hours[i]
+                night_hours += 8 * counter_of_hours[i]
+            elif i == '820/':
+                day_hours += 12 * counter_of_hours[i]
+                night_hours += 2 * counter_of_hours[i]
+            elif i == '420/':
+                day_hours += 8 * counter_of_hours[i]
+                night_hours += 2 * counter_of_hours[i]
+            elif i in ['0/8', '/8']:
+                day_hours += 8 * counter_of_hours[i]
+                night_hours += 6 * counter_of_hours[i]
+        # d = {'night_hours': night_hours, 'all_hours': all_hours}
+        return {'night_hours': night_hours, 'day_hours': day_hours}
+
+    def get_day_hours(self):
+        count_day_hours = self.count_hours(self.prepared_range)['day_hours']
+        return count_day_hours
+
+    def get_night_hours(self):
+        count_night_hours = self.count_hours(self.prepared_range)['night_hours']
+        return count_night_hours
+
+    def get_holidays(self):
+        holidays_range = list()
+        for i, cell in enumerate(self.prepared_range):
+            if worker.normalize_workdays[i] == 'П':
+                holidays_range.append(cell)
+        count_holiday_hours = self.count_hours(holidays_range)['day_hours']
+        return count_holiday_hours
 
 
 worker = Worker('B13', DEM_sheet)
 worker_women = Worker('B35', DEM_sheet)
 
 print(worker)
-print(worker.cells_range)
-print(worker.work_days_matrix)
-print(worker.normalize_workdays())
-print(worker.norm_of_hours())
+# print(len(worker.cells_range),worker.cells_range)
+# print(len(worker.work_days_matrix), worker.work_days_matrix)
+# print(len(worker.normalize_workdays), worker.normalize_workdays)
+print(worker.norm_of_hours)
+print(worker.get_day_hours())
+print(worker.get_night_hours())
+print(worker.get_holidays())
