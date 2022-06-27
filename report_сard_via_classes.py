@@ -1,7 +1,7 @@
 import re
 from collections import Counter
 from copy import deepcopy
-from functools import cached_property
+from functools import cached_property, partial
 
 from openpyxl import load_workbook
 
@@ -59,8 +59,6 @@ class Sheet:
         return f'{self.sheet}'
 
 
-
-
 class Worker(Sheet):
     def __init__(self, cell_index, sheet):
         super().__init__(sheet)
@@ -91,7 +89,7 @@ class Worker(Sheet):
 
     @property
     def _work_days_matrix(self):
-        return super(Worker, self)._work_days_matrix[:len(self.cells_range) + 1]
+        return super(Worker, self)._work_days_matrix[:len(self.cells_range)]
 
     @cached_property
     def _normalize_workdays(self):
@@ -103,24 +101,24 @@ class Worker(Sheet):
         return normalize_workdays
 
     @cached_property
-    def counter_of_days(self):
-        return Counter(self._normalize_workdays)
-
-    @cached_property
     def norm_of_hours(self):
-        counter = self.counter_of_days
+        counter = Counter(self._normalize_workdays)
         duration_of_day = 8
         if self.is_28_hours_week:
             duration_of_day = 5.6
         duration_of_short_day = duration_of_day - 1
         norm_of_hours = counter['РД'] * duration_of_day + counter['КД'] * duration_of_short_day
-        return norm_of_hours
+        return round(norm_of_hours, 1)
+
+    @cached_property
+    def counter_of_days(self):
+        return Counter(self._prepared_range)
 
     def get_weekends(self):
         return self.counter_of_days['В']
 
     def get_vacation_days(self):
-        return self.counter_of_days['OT']
+        return self.counter_of_days['ОТ']
 
     def get_medical_days(self):
         return self.counter_of_days['Б']
@@ -130,14 +128,15 @@ class Worker(Sheet):
 
     def get_other_days_off(self):
         return sum(
-            [self.counter_of_days[key] for key in ['ОВ', 'У', 'ДО', 'К', 'ПР', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ']])
+            [self.counter_of_days[key] for key in
+             ['ОВ', 'У', 'ДО', 'К', 'ПР', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ']])
 
-    # def get_attendance_days(self):
-    #     attendance_days = sum(
-    #         counter.values()) - (absence_days + vacation_days + medical_days +
-    #                              other_absence_days + absence_paid_days)
-    #     return self.counter_of_days['В']
-
+    def get_attendance_days(self):
+        attendance_days = sum(self.counter_of_days.values()) - \
+                          (self.get_weekends() + self.get_vacation_days() +
+                           self.get_medical_days() +
+                           self.get_NOD_days() + self.get_other_days_off())
+        return attendance_days
 
     @property
     def _prepared_range(self):
@@ -150,6 +149,7 @@ class Worker(Sheet):
                     # remove whitespaces
                     new_cell = re.sub(r'\s+', '', cell)
                 new_cells_list.append(new_cell)
+        # print(new_cells_list)
         return new_cells_list
 
     @staticmethod
@@ -157,6 +157,7 @@ class Worker(Sheet):
         day_hours = 0
         night_hours = 0
         counter_of_hours = Counter(cells_range)
+
         for i in counter_of_hours.keys():
             if isinstance(i, float):
                 day_hours += i * counter_of_hours[i]
@@ -178,7 +179,7 @@ class Worker(Sheet):
                 day_hours += 8 * counter_of_hours[i]
                 night_hours += 6 * counter_of_hours[i]
         # d = {'night_hours': night_hours, 'all_hours': all_hours}
-        return {'night_hours': night_hours, 'day_hours': day_hours}
+        return {'night_hours': round(night_hours, 1), 'day_hours': round(day_hours, 1)}
 
     def get_day_hours(self):
         count_day_hours = self.count_hours(self._prepared_range)['day_hours']
@@ -188,37 +189,65 @@ class Worker(Sheet):
         count_night_hours = self.count_hours(self._prepared_range)['night_hours']
         return count_night_hours
 
-    def get_holidays(self):
+    def get_holidays_hours(self):
         holidays_range = list()
         for i, cell in enumerate(self._prepared_range):
-            if worker._normalize_workdays[i] == 'П':
+            if self._normalize_workdays[i] == 'П':
                 holidays_range.append(cell)
         count_holiday_hours = self.count_hours(holidays_range)['day_hours']
         return count_holiday_hours
 
     def get_overwork(self):
-        return self.get_day_hours() - self.norm_of_hours
+        # print('day_hours', self.get_day_hours())
+        # print('norm', self.norm_of_hours)
+        # print('holiday_hours', self.get_holidays_hours())
+        return round(self.get_day_hours() - self.norm_of_hours - self.get_holidays_hours(), 1)
 
-    # def fill_sheet(self):
-    #     offset_row = 0
-    #     offset_column_attendance = 17
-    #     offset_column_absence = 22
-    #     offset_column_vacation = 23
-    #     offset_column_medical = 24
-    #     offset_column_other_absence = 25
-    #     offset_column_other_absence_paid = 26
-    #     self.sheet[self.cell].offset(row=offset_row, column=offset_column_attendance).value =
-    #     pass
+    def fill_worker_line(self):
+        offset_row = 0
+        offset_column_attendance = 17
+        offset_column_day_hours = 18
+        offset_column_night_hours = 20
+        offset_column_holidays_hours = 21
+        offset_column_weekends = 22
+        offset_column_vacation = 23
+        offset_column_medical = 24
+        offset_column_other_days_off = 25
+        offset_column_NOD_days = 26
+        offset_column_overwork = 27
 
-worker = Worker('B13', DEM_sheet)
-worker_women = Worker('B35', DEM_sheet)
 
-print(worker)
-# print(len(worker.cells_range),worker.cells_range)
-# print(len(worker.work_days_matrix), worker.work_days_matrix)
-# print(len(worker.normalize_workdays), worker.normalize_workdays)
-print(worker.norm_of_hours)
-print(worker.get_day_hours())
-print(worker.get_night_hours())
-print(worker.get_overwork())
+        cell_offset = partial(self.cell.offset, row=offset_row)
+        cell_offset(column=offset_column_attendance).value = self.get_attendance_days() or None
+        cell_offset(column=offset_column_weekends).value = self.get_weekends() or None
+        cell_offset(column=offset_column_vacation).value = self.get_vacation_days() or None
+        cell_offset(column=offset_column_medical).value = self.get_medical_days() or None
+        cell_offset(column=offset_column_other_days_off).value = self.get_other_days_off() or None
+        cell_offset(column=offset_column_NOD_days).value = self.get_NOD_days() or None
+        cell_offset(column=offset_column_day_hours).value = self.get_day_hours() or None
+        cell_offset(column=offset_column_night_hours).value = self.get_night_hours() or None
+        cell_offset(column=offset_column_holidays_hours).value = self.get_holidays_hours() or None
+        cell_offset(column=offset_column_overwork).value = self.get_overwork() or None
+        # wb.save(BACKUP_REPORT_CARD_FILE)
 
+
+    # def save_filled_sheet(self):
+    #     self.fill_worker_line()
+    #     wb.save(BACKUP_REPORT_CARD_FILE)
+
+
+worker = Worker('B33', DEM_sheet)
+# worker_women = Worker('B35', DEM_sheet)
+# worker_women2 = Worker('B37', DEM_sheet)
+
+
+# print(worker.get_medical_days())
+# print(worker.get_other_days_off())
+# print(worker.get_weekends())
+# print(worker.get_overwork())
+# print(worker.get_day_hours())
+# print(worker.get_night_hours())
+# print(worker.norm_of_hours)
+# print(worker._normalize_workdays)
+# print(worker._work_days_matrix)
+# print(worker.save_filled_sheet())
