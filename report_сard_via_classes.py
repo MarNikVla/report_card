@@ -84,8 +84,9 @@ class Worker(Sheet):
 
     @cached_property
     def is_28_hours_week(self):
-        color_standard_orange = 'FFFFC000'
-        return self.cell.fill.start_color.index == color_standard_orange
+        print(self.cell.fill.start_color.index)
+        color_standard_yellow = 'FFFFFF00'
+        return self.cell.fill.start_color.index == color_standard_yellow
 
     @property
     def _work_days_matrix(self):
