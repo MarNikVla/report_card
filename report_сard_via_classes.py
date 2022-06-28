@@ -123,19 +123,15 @@ class Worker(Sheet):
     def get_medical_days(self):
         return self.counter_of_days['Б']
 
-    def get_NOD_days(self):
-        return self.counter_of_days['НОД']
-
     def get_other_days_off(self):
         return sum(
             [self.counter_of_days[key] for key in
-             ['ОВ', 'У', 'ДО', 'К', 'ПР', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ']])
+             ['ОВ', 'У', 'ДО', 'К', 'ПР', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ', 'НОД']])
 
     def get_attendance_days(self):
         attendance_days = sum(self.counter_of_days.values()) - \
                           (self.get_weekends() + self.get_vacation_days() +
-                           self.get_medical_days() +
-                           self.get_NOD_days() + self.get_other_days_off())
+                           self.get_medical_days() + self.get_other_days_off())
         return attendance_days
 
     @property
@@ -213,9 +209,7 @@ class Worker(Sheet):
         offset_column_vacation = 23
         offset_column_medical = 24
         offset_column_other_days_off = 25
-        offset_column_NOD_days = 26
-        offset_column_overwork = 27
-
+        offset_column_overwork = 26
 
         cell_offset = partial(self.cell.offset, row=offset_row)
         cell_offset(column=offset_column_attendance).value = self.get_attendance_days() or None
@@ -223,13 +217,11 @@ class Worker(Sheet):
         cell_offset(column=offset_column_vacation).value = self.get_vacation_days() or None
         cell_offset(column=offset_column_medical).value = self.get_medical_days() or None
         cell_offset(column=offset_column_other_days_off).value = self.get_other_days_off() or None
-        cell_offset(column=offset_column_NOD_days).value = self.get_NOD_days() or None
         cell_offset(column=offset_column_day_hours).value = self.get_day_hours() or None
         cell_offset(column=offset_column_night_hours).value = self.get_night_hours() or None
         cell_offset(column=offset_column_holidays_hours).value = self.get_holidays_hours() or None
         cell_offset(column=offset_column_overwork).value = self.get_overwork() or None
         # wb.save(BACKUP_REPORT_CARD_FILE)
-
 
     # def save_filled_sheet(self):
     #     self.fill_worker_line()
