@@ -45,8 +45,9 @@ class Ui_MainWindow(object):
         self.pushButton.setText(_translate("MainWindow", "..."))
 
     def open_file(self):
-        self.file_name = QtWidgets.QFileDialog.getOpenFileName(None, "Open", "", "CSV Files (*.csv)")
+        self.file_name = QtWidgets.QFileDialog.getOpenFileName(None, "Open", "", "")
         if self.file_name[0] != '':
+            print(self.file_name[0])
             self.lineEdit.setText(self.file_name[0])
 
 
