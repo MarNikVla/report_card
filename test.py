@@ -18,15 +18,21 @@ class Ui_MainWindow(object):
         MainWindow.resize(674, 238)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton.setGeometry(QtCore.QRect(50, 110, 171, 40))
         self.pushButton.setObjectName("pushButton")
+        self.pushButton.clicked.connect(self.open_file)
+
         self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_2.setGeometry(QtCore.QRect(470, 110, 171, 40))
         self.pushButton_2.setObjectName("pushButton_2")
+
         self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit.setGeometry(QtCore.QRect(20, 30, 621, 41))
         self.lineEdit.setObjectName("lineEdit")
+        self.lineEdit.setReadOnly(True)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 674, 36))
@@ -44,6 +50,13 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.pushButton.setText(_translate("MainWindow", "Выберите файл"))
         self.pushButton_2.setText(_translate("MainWindow", "Заполнить"))
+
+    def open_file(self):
+        self.file_name = QtWidgets.QFileDialog.getOpenFileName(None, "Open", "", "")
+        if self.file_name[0] != '':
+            print(self.file_name[0])
+
+            self.lineEdit.setText(self.file_name[0])
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

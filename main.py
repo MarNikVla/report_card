@@ -6,7 +6,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from report_сard_via_classes import Worker
 
-REPORT_CARD_FILE = 'test.xlsx'
+REPORT_CARD_FILE = 'C:/projects/report_card/test.xlsx'
 BACKUP_REPORT_CARD_FILE = f'backup_{REPORT_CARD_FILE}'
 INITIAL_ROW_OF_NAMES = 13
 FINAL_ROW_OF_NAMES = 49
@@ -44,6 +44,10 @@ def fill_all_workers(wokers_list: list):
 def save_sheet(sheet):
     fill_all_workers(get_workers(sheet))
     wb.save(BACKUP_REPORT_CARD_FILE)
+
+def save_file(file_name):
+    pass
+
 
 
 if __name__ == '__main__':
