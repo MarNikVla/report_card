@@ -1,4 +1,6 @@
+import os
 from functools import lru_cache
+import pathlib
 from typing import Type
 
 from openpyxl import load_workbook
@@ -6,8 +8,22 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from report_сard_via_classes import Worker
 
-REPORT_CARD_FILE = 'C:/projects/report_card/test.xlsx'
-BACKUP_REPORT_CARD_FILE = f'backup_{REPORT_CARD_FILE}'
+
+REPORT_CARD_FILE = pathlib.Path('C:/project/report_card/test.xlsx')
+
+
+def test(file_name):
+    # print(pathlib.Path.home())
+    print(file_name.name)
+    print(file_name.parent.joinpath(f'backup_{file_name.name}'))
+    print(file_name.is_file())
+    # with file_name.open() as f:
+    #     f.read()
+
+
+# REPORT_CARD_FILE = 'test.xlsx'
+# print(REPORT_CARD_FILE)
+BACKUP_REPORT_CARD_FILE = REPORT_CARD_FILE.parent.joinpath(f'backup_{REPORT_CARD_FILE.name}')
 INITIAL_ROW_OF_NAMES = 13
 FINAL_ROW_OF_NAMES = 49
 COLUMN_OF_NAMES = 2
@@ -45,11 +61,21 @@ def save_sheet(sheet):
     fill_all_workers(get_workers(sheet))
     wb.save(BACKUP_REPORT_CARD_FILE)
 
+
 def save_file(file_name):
-    pass
+    REPORT_CARD_FILE = pathlib.Path(file_name)
+    BACKUP_REPORT_CARD_FILE = REPORT_CARD_FILE.parent.joinpath(f'backup_{REPORT_CARD_FILE.name}')
+    wb = load_workbook(filename=REPORT_CARD_FILE)
+    # print(wb._sheets)
+    for sheet in wb._sheets:
+        fill_all_workers(get_workers(sheet))
+    wb.save(BACKUP_REPORT_CARD_FILE)
+
 
 
 
 if __name__ == '__main__':
-    save_sheet(DEM_sheet)
-    save_sheet(machinist_sheet)
+    # save_sheet(DEM_sheet)
+    # save_sheet(machinist_sheet)
+    # test(REPORT_CARD_FILE)
+    save_file('C:/project/report_card/test.xlsx')

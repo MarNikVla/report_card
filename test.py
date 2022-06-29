@@ -12,6 +12,9 @@ import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QFileDialog
 
+from main import save_file
+
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -27,6 +30,7 @@ class Ui_MainWindow(object):
         self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_2.setGeometry(QtCore.QRect(470, 110, 171, 40))
         self.pushButton_2.setObjectName("pushButton_2")
+        self.pushButton.clicked.connect(self.fill_file)
 
         self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit.setGeometry(QtCore.QRect(20, 30, 621, 41))
@@ -55,8 +59,14 @@ class Ui_MainWindow(object):
         self.file_name = QtWidgets.QFileDialog.getOpenFileName(None, "Open", "", "")
         if self.file_name[0] != '':
             print(self.file_name[0])
-
             self.lineEdit.setText(self.file_name[0])
+
+    def fill_file(self):
+
+        if self.file_name[0] != '':
+            print(self.file_name[0])
+            save_file(self.file_name[0])
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

@@ -29,7 +29,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate('MainWindow', 'MainWindow'))
         self.pushButton.setText(_translate('MainWindow', 'button'))
-        self.pushButton.clicked.connect(self.open_dialog_box)
+        # self.pushButton.clicked.connect(self.open_dialog_box)
 
 
 if __name__ == '__main__':

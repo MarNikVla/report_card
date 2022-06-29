@@ -84,7 +84,7 @@ class Worker(Sheet):
 
     @cached_property
     def is_28_hours_week(self):
-        print(self.cell.fill.start_color.index)
+        # print(self.cell.fill.start_color.index)
         color_standard_yellow = 'FFFFFF00'
         return self.cell.fill.start_color.index == color_standard_yellow
 
@@ -229,7 +229,7 @@ class Worker(Sheet):
     #     wb.save(BACKUP_REPORT_CARD_FILE)
 
 
-worker = Worker('B33', DEM_sheet)
+# worker = Worker('B33', DEM_sheet)
 # worker_women = Worker('B35', DEM_sheet)
 # worker_women2 = Worker('B37', DEM_sheet)
 
