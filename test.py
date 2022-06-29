@@ -10,6 +10,7 @@
 import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSlot, QTimer
 from PyQt5.QtWidgets import QFileDialog
 
 from main import save_file
@@ -30,7 +31,8 @@ class Ui_MainWindow(object):
         self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_2.setGeometry(QtCore.QRect(470, 110, 171, 40))
         self.pushButton_2.setObjectName("pushButton_2")
-        self.pushButton.clicked.connect(self.fill_file)
+        self.pushButton_2.setDisabled(True)
+        self.pushButton_2.clicked.connect(self.fill_file)
 
         self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit.setGeometry(QtCore.QRect(20, 30, 621, 41))
@@ -46,6 +48,7 @@ class Ui_MainWindow(object):
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
+        self.time = QTimer(MainWindow)
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -56,16 +59,20 @@ class Ui_MainWindow(object):
         self.pushButton_2.setText(_translate("MainWindow", "Заполнить"))
 
     def open_file(self):
-        self.file_name = QtWidgets.QFileDialog.getOpenFileName(None, "Open", "", "")
+        self.file_name = QtWidgets.QFileDialog.getOpenFileName(None, "Open", "",
+                                                               "Excel (*.xls *.xlsx)")
         if self.file_name[0] != '':
             print(self.file_name[0])
             self.lineEdit.setText(self.file_name[0])
+            self.pushButton_2.setDisabled(False)
 
+    # @pyqtSlot()
     def fill_file(self):
-
         if self.file_name[0] != '':
-            print(self.file_name[0])
             save_file(self.file_name[0])
+            # self.time.start(2000)
+            # self.time.timeout(5000)
+            MainWindow.close()
 
 
 if __name__ == '__main__':
