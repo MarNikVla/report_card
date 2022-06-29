@@ -1,4 +1,4 @@
-import os
+
 from functools import lru_cache
 import pathlib
 from typing import Type
@@ -8,32 +8,31 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from report_сard_via_classes import Worker
 
-
 REPORT_CARD_FILE = pathlib.Path('C:/project/report_card/test.xlsx')
 
-
-def test(file_name):
-    # print(pathlib.Path.home())
-    print(file_name.name)
-    print(file_name.parent.joinpath(f'backup_{file_name.name}'))
-    print(file_name.is_file())
-    # with file_name.open() as f:
-    #     f.read()
+# def test(file_name):
+#     print(pathlib.Path.home())
+#     print(file_name.name)
+#     print(file_name.parent.joinpath(f'backup_{file_name.name}'))
+#     print(file_name.is_file())
+# with file_name.open() as f:
+#     f.read()
 
 
 # REPORT_CARD_FILE = 'test.xlsx'
 # print(REPORT_CARD_FILE)
-BACKUP_REPORT_CARD_FILE = REPORT_CARD_FILE.parent.joinpath(f'backup_{REPORT_CARD_FILE.name}')
-INITIAL_ROW_OF_NAMES = 13
-FINAL_ROW_OF_NAMES = 49
-COLUMN_OF_NAMES = 2
+# BACKUP_REPORT_CARD_FILE = REPORT_CARD_FILE.parent.joinpath(f'backup_{REPORT_CARD_FILE.name}')
+INITIAL_ROW_OF_NAMES: int = 13
+FINAL_ROW_OF_NAMES: int = 49
+COLUMN_OF_NAMES: int = 2
 
-wb = load_workbook(filename=REPORT_CARD_FILE)
-machinist_sheet_name, DEM_sheet_name, reason_sheet_name = wb.sheetnames
 
-machinist_sheet, DEM_sheet, reason_of_absence_sheet = wb[machinist_sheet_name], \
-                                                      wb[DEM_sheet_name], \
-                                                      wb[reason_sheet_name]
+# wb = load_workbook(filename=REPORT_CARD_FILE)
+# machinist_sheet_name, DEM_sheet_name, reason_sheet_name = wb.sheetnames
+#
+# machinist_sheet, DEM_sheet, reason_of_absence_sheet = wb[machinist_sheet_name], \
+#                                                       wb[DEM_sheet_name], \
+#                                                       wb[reason_sheet_name]
 
 
 @lru_cache
@@ -57,21 +56,20 @@ def fill_all_workers(wokers_list: list):
         worker.fill_worker_line()
 
 
-def save_sheet(sheet):
-    fill_all_workers(get_workers(sheet))
-    wb.save(BACKUP_REPORT_CARD_FILE)
+# def save_sheet(sheet):
+#     BACKUP_REPORT_CARD_FILE = REPORT_CARD_FILE.parent.joinpath(f'backup_{REPORT_CARD_FILE.name}')
+#     fill_all_workers(get_workers(sheet))
+#     wb.save(BACKUP_REPORT_CARD_FILE)
 
 
 def save_file(file_name):
-    REPORT_CARD_FILE = pathlib.Path(file_name)
-    BACKUP_REPORT_CARD_FILE = REPORT_CARD_FILE.parent.joinpath(f'backup_{REPORT_CARD_FILE.name}')
-    wb = load_workbook(filename=REPORT_CARD_FILE)
+    report_card_file = pathlib.Path(file_name)
+    backup_report_card_file = report_card_file.parent.joinpath(f'backup_{report_card_file.name}')
+    wb = load_workbook(filename=report_card_file)
     # print(wb._sheets)
     for sheet in wb._sheets:
         fill_all_workers(get_workers(sheet))
-    wb.save(BACKUP_REPORT_CARD_FILE)
-
-
+    wb.save(backup_report_card_file)
 
 
 if __name__ == '__main__':

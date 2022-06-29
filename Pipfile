@@ -8,6 +8,8 @@ verify_ssl = true
 [packages]
 openpyxl = "*"
 pyqt5 = "*"
+pyinstaller = "*"
+pyqt5-stubs = "==5.15.6.0"
 
 [requires]
 python_version = "3.9"

@@ -5,15 +5,15 @@ from functools import cached_property, partial
 
 from openpyxl import load_workbook
 
-REPORT_CARD_FILE = 'test.xlsx'
-BACKUP_REPORT_CARD_FILE = f'backup_{REPORT_CARD_FILE}'
-
-wb = load_workbook(filename=REPORT_CARD_FILE)
-machinist_sheet_name, DEM_sheet_name, reason_sheet_name = wb.sheetnames
-
-machinist_sheet, DEM_sheet, reason_of_absence_sheet = wb[machinist_sheet_name], \
-                                                      wb[DEM_sheet_name], \
-                                                      wb[reason_sheet_name]
+# REPORT_CARD_FILE = 'test.xlsx'
+# BACKUP_REPORT_CARD_FILE = f'backup_{REPORT_CARD_FILE}'
+#
+# wb = load_workbook(filename=REPORT_CARD_FILE)
+# machinist_sheet_name, DEM_sheet_name, reason_sheet_name = wb.sheetnames
+#
+# machinist_sheet, DEM_sheet, reason_of_absence_sheet = wb[machinist_sheet_name], \
+#                                                       wb[DEM_sheet_name], \
+#                                                       wb[reason_sheet_name]
 
 
 class Sheet:
