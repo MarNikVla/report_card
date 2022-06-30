@@ -77,16 +77,16 @@ class Ui_MainWindow(object):
     def fill_file(self):
         try:
             if self.file_name[0] != '':
+                # print(1/0)
                 save_file(self.file_name[0])
                 self.label.setHidden(False)
+                self.label.setStyleSheet("color: green")
                 self.label.setText('Done! Окно можно закрыть')
         except Exception as exc:
-            print(exc.__class__.__name__)
-            # error = 'ошибка номер ....'
-            # print("ошибка с текстом, строка, линия и т.п. тип ошибки(что пишет компилятор): " + str(error))
-            # print("traceback.print_exc():")
-            # traceback.print_exc()
-            # print("____")
+            # print(exc.__class__.__name__)
+            self.label.setHidden(False)
+            self.label.setStyleSheet(
+                "background-color: yellow; color: red; border: 1px solid black;")
             if exc.__class__.__name__ == 'PermissionError':
                 self.label.setText(f'Файл используется другой программой Ошибка:{exc.__class__.__name__}: {exc}')
             else:
