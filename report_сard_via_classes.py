@@ -5,15 +5,15 @@ from functools import cached_property, partial
 
 from openpyxl import load_workbook
 
-# REPORT_CARD_FILE = 'test.xlsx'
-# BACKUP_REPORT_CARD_FILE = f'backup_{REPORT_CARD_FILE}'
-#
-# wb = load_workbook(filename=REPORT_CARD_FILE)
-# machinist_sheet_name, DEM_sheet_name, reason_sheet_name = wb.sheetnames
-#
-# machinist_sheet, DEM_sheet, reason_of_absence_sheet = wb[machinist_sheet_name], \
-#                                                       wb[DEM_sheet_name], \
-#                                                       wb[reason_sheet_name]
+REPORT_CARD_FILE = 'табель июнь ГТЦ.xlsx'
+BACKUP_REPORT_CARD_FILE = f'backup_{REPORT_CARD_FILE}'
+
+wb = load_workbook(filename=REPORT_CARD_FILE)
+machinist_sheet_name, DEM_sheet_name, reason_sheet_name = wb.sheetnames
+
+machinist_sheet, DEM_sheet, reason_of_absence_sheet = wb[machinist_sheet_name], \
+                                                      wb[DEM_sheet_name], \
+                                                      wb[reason_sheet_name]
 
 
 class Sheet:
@@ -154,6 +154,7 @@ class Worker(Sheet):
         day_hours = 0
         night_hours = 0
         counter_of_hours = Counter(cells_range)
+        # print(counter_of_hours)
 
         for i in counter_of_hours.keys():
             if isinstance(i, float):
@@ -166,10 +167,10 @@ class Worker(Sheet):
             elif i in ['/820/24', '0/820/', '/820/']:
                 day_hours += 12 * counter_of_hours[i]
                 night_hours += 8 * counter_of_hours[i]
-            elif i == '820/':
+            elif i in ['820/24', '820/']:
                 day_hours += 12 * counter_of_hours[i]
                 night_hours += 2 * counter_of_hours[i]
-            elif i == '420/':
+            elif i in ['420/24', '420/']:
                 day_hours += 8 * counter_of_hours[i]
                 night_hours += 2 * counter_of_hours[i]
             elif i in ['0/8', '/8']:
@@ -224,12 +225,12 @@ class Worker(Sheet):
         cell_offset(column=offset_column_overwork).value = self.get_overwork() or None
         # wb.save(BACKUP_REPORT_CARD_FILE)
 
-    # def save_filled_sheet(self):
-    #     self.fill_worker_line()
-    #     wb.save(BACKUP_REPORT_CARD_FILE)
+    def save_filled_sheet(self):
+        self.fill_worker_line()
+        wb.save(BACKUP_REPORT_CARD_FILE)
 
 
-# worker = Worker('B33', DEM_sheet)
+# worker = Worker('B25', DEM_sheet)
 # worker_women = Worker('B35', DEM_sheet)
 # worker_women2 = Worker('B37', DEM_sheet)
 
