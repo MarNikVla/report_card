@@ -8,7 +8,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from report_сard_via_classes import Worker
 
-REPORT_CARD_FILE = pathlib.Path('C:/project/report_card/test.xlsx')
+# REPORT_CARD_FILE = pathlib.Path('C:/project/report_card/test.xlsx')
 
 # def test(file_name):
 #     print(pathlib.Path.home())
@@ -77,6 +77,6 @@ if __name__ == '__main__':
     # save_sheet(machinist_sheet)
     # test(REPORT_CARD_FILE)
     # print('sdfsdf sdfsdf f    sfd    sdf '.split())
-    save_file('C:/project/report_card/test.xlsx')
+    save_file('test.xlsx')
 
 

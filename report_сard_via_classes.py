@@ -2,10 +2,9 @@ import re
 from collections import Counter
 from copy import deepcopy
 from functools import cached_property, partial
-
 from openpyxl import load_workbook
 
-REPORT_CARD_FILE = 'табель июнь ГТЦ.xlsx'
+REPORT_CARD_FILE = 'test.xlsx'
 BACKUP_REPORT_CARD_FILE = f'backup_{REPORT_CARD_FILE}'
 
 wb = load_workbook(filename=REPORT_CARD_FILE)
@@ -73,11 +72,11 @@ class Worker(Sheet):
     @property
     def cells_range(self):
         cells_range = list()
-        for col in self.sheet.iter_rows(min_row=self.cell.row,
+        for row in self.sheet.iter_rows(min_row=self.cell.row,
                                         max_row=self.cell.row + 1,
                                         min_col=self.cell.column + 1,
                                         max_col=self.cell.column + 16):
-            for cell in col:
+            for cell in row:
                 if cell.value not in (None, 'Х'):
                     cells_range.append(cell.value)
         return cells_range
@@ -113,7 +112,7 @@ class Worker(Sheet):
 
     @cached_property
     def counter_of_days(self):
-        return Counter(self._prepared_range)
+        return Counter(self.cells_range)
 
     def get_weekends(self):
         return self.counter_of_days['В']
@@ -135,38 +134,25 @@ class Worker(Sheet):
                            self.get_medical_days() + self.get_other_days_off())
         return attendance_days
 
-    @property
-    def _prepared_range(self):
-        new_cells_list = list()
-        for cell in self.cells_range:
-            if cell is not None:
-                try:
-                    new_cell = float(cell.replace(",", "."))
-                except ValueError:
-                    # remove whitespaces
-                    # new_cell = re.sub(r'\s+', '', cell)
-                    new_cell = cell
-                new_cells_list.append(new_cell)
-        # print(new_cells_list)
-        return new_cells_list
+    def split_cells(self, cells):
+        splited_cell_list = []
+        for cell in cells:
+            # print(cells_range):
+            try:
+                new_cell = float(cell.replace(",", "."))
+                splited_cell_list.append(new_cell)
+            except ValueError:
+                new_cell = cell.split()
+                splited_cell_list.extend(new_cell)
+        return splited_cell_list
 
-    @staticmethod
-    def count_hours(cells_range):
+    def count_hours(self, cells_range):
         day_hours = 0
         night_hours = 0
         # counter_of_hours = Counter(cells_range)
         # print(counter_of_hours)
-        splited_cell = []
+        splited_cell = self.split_cells(cells_range)
 
-        for cell in cells_range:
-            print(cells_range)
-            if cell is not None:
-                try:
-                    new_cell = float(cell.replace(",", "."))
-                except ValueError:
-                    new_cell = cell.split()
-                splited_cell.extend(new_cell)
-        print(splited_cell)
         counter_of_hours = Counter(splited_cell)
         for i in counter_of_hours.keys():
             if isinstance(i, float):
@@ -176,35 +162,47 @@ class Worker(Sheet):
             elif i in ['20/', '20/24']:
                 day_hours += 4 * counter_of_hours[i]
                 night_hours += 2 * counter_of_hours[i]
-            elif i in ['/820/24', '0/820/', '/820/']:
-                day_hours += 12 * counter_of_hours[i]
-                night_hours += 8 * counter_of_hours[i]
-            elif i in ['820/24', '820/']:
-                day_hours += 12 * counter_of_hours[i]
-                night_hours += 2 * counter_of_hours[i]
-            elif i in ['420/24', '420/']:
-                day_hours += 8 * counter_of_hours[i]
-                night_hours += 2 * counter_of_hours[i]
+            # elif i in ['/820/24', '0/820/', '/820/']:
+            #     day_hours += 12 * counter_of_hours[i]
+            #     night_hours += 8 * counter_of_hours[i]
+            # elif i in ['820/24', '820/']:
+            #     day_hours += 12 * counter_of_hours[i]
+            #     night_hours += 2 * counter_of_hours[i]
+            # elif i in ['420/24', '420/']:
+            #     day_hours += 8 * counter_of_hours[i]
+            #     night_hours += 2 * counter_of_hours[i]
             elif i in ['0/8', '/8']:
                 day_hours += 8 * counter_of_hours[i]
                 night_hours += 6 * counter_of_hours[i]
-        # d = {'night_hours': night_hours, 'all_hours': all_hours}
-        return {'night_hours': round(night_hours, 1), 'day_hours': round(day_hours, 1)}
+        return {'night_hours': round(night_hours, 1), 'all_hours': round(day_hours, 1)}
 
     def get_day_hours(self):
-        count_day_hours = self.count_hours(self._prepared_range)['day_hours']
+        count_day_hours = self.count_hours(self.cells_range)['all_hours']
         return count_day_hours
 
     def get_night_hours(self):
-        count_night_hours = self.count_hours(self._prepared_range)['night_hours']
+        count_night_hours = self.count_hours(self.cells_range)['night_hours']
         return count_night_hours
+
+    def get_red_font_cells(self):
+        red_font_cells_list = list()
+        for row in self.sheet.iter_rows(min_row=self.cell.row,
+                                        max_row=self.cell.row + 1,
+                                        min_col=self.cell.column + 1,
+                                        max_col=self.cell.column + 16):
+            for cell in row:
+                # print(cell.value.font.color)
+                if cell.value not in (None, 'Х'):
+                    red_font_cells_list.append(cell.value)
+        return red_font_cells_list
 
     def get_holidays_hours(self):
         holidays_range = list()
-        for i, cell in enumerate(self._prepared_range):
+        for i, cell in enumerate(self.cells_range):
             if self._normalize_workdays[i] == 'П':
                 holidays_range.append(cell)
-        count_holiday_hours = self.count_hours(holidays_range)['day_hours']
+        print(holidays_range)
+        count_holiday_hours = self.count_hours(holidays_range)['all_hours']
         return count_holiday_hours
 
     def get_overwork(self):
@@ -242,12 +240,12 @@ class Worker(Sheet):
         wb.save(BACKUP_REPORT_CARD_FILE)
 
 
-# worker = Worker('B25', DEM_sheet)
+worker = Worker('B13', DEM_sheet)
 # worker_women = Worker('B35', DEM_sheet)
 # worker_women2 = Worker('B37', DEM_sheet)
 
 
-# print(worker.get_medical_days())
+print(worker.get_red_font_cells())
 # print(worker.get_other_days_off())
 # print(worker.get_weekends())
 # print(worker.get_overwork())
@@ -256,4 +254,4 @@ class Worker(Sheet):
 # print(worker.norm_of_hours)
 # print(worker._normalize_workdays)
 # print(worker._work_days_matrix)
-# print(worker.save_filled_sheet())
+print(worker.save_filled_sheet())
