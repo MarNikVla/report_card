@@ -76,4 +76,7 @@ if __name__ == '__main__':
     # save_sheet(DEM_sheet)
     # save_sheet(machinist_sheet)
     # test(REPORT_CARD_FILE)
+    # print('sdfsdf sdfsdf f    sfd    sdf '.split())
     save_file('C:/project/report_card/test.xlsx')
+
+

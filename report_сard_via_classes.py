@@ -144,7 +144,8 @@ class Worker(Sheet):
                     new_cell = float(cell.replace(",", "."))
                 except ValueError:
                     # remove whitespaces
-                    new_cell = re.sub(r'\s+', '', cell)
+                    # new_cell = re.sub(r'\s+', '', cell)
+                    new_cell = cell
                 new_cells_list.append(new_cell)
         # print(new_cells_list)
         return new_cells_list
@@ -153,9 +154,20 @@ class Worker(Sheet):
     def count_hours(cells_range):
         day_hours = 0
         night_hours = 0
-        counter_of_hours = Counter(cells_range)
+        # counter_of_hours = Counter(cells_range)
         # print(counter_of_hours)
+        splited_cell = []
 
+        for cell in cells_range:
+            print(cells_range)
+            if cell is not None:
+                try:
+                    new_cell = float(cell.replace(",", "."))
+                except ValueError:
+                    new_cell = cell.split()
+                splited_cell.extend(new_cell)
+        print(splited_cell)
+        counter_of_hours = Counter(splited_cell)
         for i in counter_of_hours.keys():
             if isinstance(i, float):
                 day_hours += i * counter_of_hours[i]
