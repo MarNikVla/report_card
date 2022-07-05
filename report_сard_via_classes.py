@@ -108,7 +108,11 @@ class Worker(Sheet):
         return super(Worker, self)._work_days_matrix[:len(self.cells_range)]
 
     @cached_property
-    def _normalize_workdays(self):
+    def _normalize_workdays(self) -> list:
+        """
+        To account for the days that are included in the norm of hours
+        :return: list of days without days_to_remove
+        """
         days_to_remove = ['ОТ', 'У', 'ДО', 'Б', 'К', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ', 'НОД']
         normalize_workdays = deepcopy(self._work_days_matrix)
         for index, cell in enumerate(self.cells_range):
@@ -117,7 +121,11 @@ class Worker(Sheet):
         return normalize_workdays
 
     @cached_property
-    def norm_of_hours(self):
+    def norm_of_hours(self) -> float:
+        """
+        To account for the norm of hours for worker
+        :return: quantity of hours
+        """
         counter = Counter(self._normalize_workdays)
         duration_of_day = 8
         if self.is_28_hours_week:
@@ -128,6 +136,11 @@ class Worker(Sheet):
 
     @cached_property
     def counter_of_days(self):
+        '''
+        get all days of worker in month
+        :return: Counter
+        example: Counter({'В': 12, '8/20': 8, '/8': 4, '20/': 3, '/8 20/': 3, '0/8 20/': 1})
+        '''
         return Counter(self.cells_range)
 
     def get_weekends(self):
@@ -150,7 +163,12 @@ class Worker(Sheet):
                            self.get_medical_days() + self.get_other_days_off())
         return attendance_days
 
-    def split_cells(self, cells):
+    def split_cells(self, cells: list[str]) -> list[str]:
+        """
+        Prepared cells for further hours calculation
+        :param cells: raw list[str]
+        :return: prepared list[str]
+        """
         splited_cell_list = []
         for cell in cells:
             try:
@@ -161,7 +179,12 @@ class Worker(Sheet):
                 splited_cell_list.extend(new_cell)
         return splited_cell_list
 
-    def count_hours(self, cells_range):
+    def count_hours(self, cells_range: list[str]) -> dict:
+        """
+        count hours from cells_range
+        :param cells_range: raw list of cells.value
+        :return: dict
+        """
         day_hours = 0
         night_hours = 0
         splited_cell = self.split_cells(cells_range)
@@ -201,6 +224,10 @@ class Worker(Sheet):
         return round(self.get_day_hours() - self.norm_of_hours - self.get_holidays_hours(), 1)
 
     def fill_worker_line(self):
+        """
+        fill cells with calculation results
+        :return:
+        """
         offset_row = 0
         offset_column_attendance = 17
         offset_column_day_hours = 18
