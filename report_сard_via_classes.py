@@ -2,14 +2,25 @@ from collections import Counter
 from copy import deepcopy
 from functools import cached_property, partial
 
+from openpyxl.cell import Cell
+
 
 class Sheet:
+    """
+    represents sheet of excel file, methods and attributes of them
+    """
+
     def __init__(self, sheet):
         self.sheet = sheet
 
     @staticmethod
-    def _type_of_day(cell):
+    def _type_of_day(cell: Cell) -> str:
+        """
+        Defines type of day of the week by the specified color
 
+        :param cell: openpyxl.cell.cell.Cell
+        :return: str in ['РД', 'В', 'КД', 'П'], type of day
+        """
         working_day = 'РД'  # Рабочий день
         weekend = 'В'  # Выходной
         short_day = 'КД'  # Короткий день
@@ -28,7 +39,13 @@ class Sheet:
         return working_day
 
     @cached_property
-    def _work_days_matrix(self):
+    def _work_days_matrix(self) -> list:
+        """
+        Create list of type of days in month (working_day, weekend, holiday, short_day)
+        :return: list of str in ['РД', 'В', 'КД', 'П']
+        example: ['П', 'В', 'В', 'РД', 'РД', 'РД', 'В', 'В', 'П', 'В', 'РД', 'РД', 'РД']
+                meaning: first day of the month - 'П', second day of the month - 'В', etc
+        """
         first_day_of_month = self.sheet['C10']
         last_day_of_month = self.sheet['R11']
         work_days_matrix = list()
@@ -41,23 +58,25 @@ class Sheet:
                     work_days_matrix.append(self._type_of_day(cell))
         return work_days_matrix
 
-    def __str__(self):
-        return f'{self.sheet}'
-
 
 class Worker(Sheet):
+    """
+    represents each worker on the sheet, methods and attributes of them
+    """
+
     def __init__(self, cell_index, sheet):
         super().__init__(sheet)
         self.cell = sheet[cell_index]
 
-    def __str__(self):
-        return f'{self.cell.value},row  {self.cell.row}, col {self.cell.column}'
-
-    def __len__(self):
-        return len(self.cells_range)
-
     @property
-    def cells_range(self):
+    def cells_range(self) -> list:
+        """
+        represents how many hours the worker worked, rested etc
+        :return: list of cell range of worker filled in by user of program
+        example: ['В', 'В', '8/20', '8/20', 'В', '20/', '/8   20/', '/8', 'В', 'В', '8/20' ...]
+                meaning: first day of the month - 'В'(weekend), second day of the month - 'В', etc
+
+        """
         cells_range = list()
         for row in self.sheet.iter_rows(min_row=self.cell.row,
                                         max_row=self.cell.row + 1,
@@ -70,11 +89,22 @@ class Worker(Sheet):
 
     @cached_property
     def is_28_hours_week(self):
+        """
+        If worker have 28 hours week duration return - True
+        Specified by yellow color of worker Cell
+        :return: True|False
+        """
         color_standard_yellow = 'FFFFFF00'
         return self.cell.fill.start_color.index == color_standard_yellow
 
     @property
     def _work_days_matrix(self):
+        """
+        Create list of type of days in month (working_day, weekend, holiday, short_day) for worker
+        :return: list of str in ['РД', 'В', 'КД', 'П']
+        example: ['П', 'В', 'В', 'РД', 'РД', 'РД', 'В', 'В', 'П', 'В', 'РД', 'РД', 'РД']
+               meaning: first day of the month - 'П', second day of the month - 'В', etc
+        """
         return super(Worker, self)._work_days_matrix[:len(self.cells_range)]
 
     @cached_property
