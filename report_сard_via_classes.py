@@ -1,7 +1,9 @@
+import pathlib
 from collections import Counter
 from copy import deepcopy
 from functools import cached_property, partial
 
+from openpyxl import load_workbook
 from openpyxl.cell import Cell
 
 
@@ -163,7 +165,7 @@ class Worker(Sheet):
                            self.get_medical_days() + self.get_other_days_off())
         return attendance_days
 
-    def split_cells(self, cells: list[str]) -> list[str]:
+    def split_cells(self, cells: list[str]) -> list[str, float]:
         """
         Prepared cells for further hours calculation
         :param cells: raw list[str]
@@ -185,23 +187,27 @@ class Worker(Sheet):
         :param cells_range: raw list of cells.value
         :return: dict
         """
-        day_hours = 0
+        all_hours = 0
         night_hours = 0
         splited_cell = self.split_cells(cells_range)
 
         counter_of_hours = Counter(splited_cell)
         for i in counter_of_hours.keys():
             if isinstance(i, float):
-                day_hours += i * counter_of_hours[i]
+                all_hours += i * counter_of_hours[i]
             elif i == '8/20':
-                day_hours += 12 * counter_of_hours[i]
+                all_hours += 12 * counter_of_hours[i]
             elif i in ['20/', '20/24']:
-                day_hours += 4 * counter_of_hours[i]
+                all_hours += 4 * counter_of_hours[i]
                 night_hours += 2 * counter_of_hours[i]
             elif i in ['0/8', '/8']:
-                day_hours += 8 * counter_of_hours[i]
+                all_hours += 8 * counter_of_hours[i]
                 night_hours += 6 * counter_of_hours[i]
-        return {'night_hours': round(night_hours, 1), 'all_hours': round(day_hours, 1)}
+            elif i in ['8']:
+                all_hours += 8 * counter_of_hours[i]
+            elif i in ['4']:
+                all_hours += 4 * counter_of_hours[i]
+        return {'night_hours': round(night_hours, 1), 'all_hours': round(all_hours, 1)}
 
     def get_day_hours(self):
         count_day_hours = self.count_hours(self.cells_range)['all_hours']
@@ -250,19 +256,23 @@ class Worker(Sheet):
         cell_offset(column=offset_column_holidays_hours).value = self.get_holidays_hours() or None
         cell_offset(column=offset_column_overwork).value = self.get_overwork() or None
 
-    # for debug
+# for debug
 
     # def save_filled_sheet(self):
     #     self.fill_worker_line()
     #     wb.save(BACKUP_REPORT_CARD_FILE)
 
-# worker = Worker('B22', wb[wb.sheetnames[0]])
+
+# file_name = 'табель февраль ГТЦ11.xlsx'
+# report_card_file = pathlib.Path(file_name)
+# wb = load_workbook(filename=report_card_file)
+# worker = Worker('B13', wb[wb.sheetnames[1]])
 # worker_women = Worker('B35', DEM_sheet)
 # worker_women2 = Worker('B37', DEM_sheet)
 
 
-# print(worker.get_red_font_cells())
-# print(worker.get_other_days_off())
+# print(worker.counter_of_days)
+# print(worker.split_cells())
 # print(worker.get_weekends())
 # print(worker.get_overwork())
 # print(worker.get_day_hours())
