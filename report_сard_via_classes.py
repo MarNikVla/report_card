@@ -1,3 +1,4 @@
+import itertools
 import pathlib
 from collections import Counter
 from copy import deepcopy
@@ -165,6 +166,20 @@ class Worker(Sheet):
                            self.get_medical_days() + self.get_other_days_off())
         return attendance_days
 
+    @staticmethod
+    def floated_cells(cell_list: list[str]) -> list[str, float]:
+        """
+        try to float cell data in cell list
+        :param cell_list: splited_cell_list
+        :return: floated_cells_list
+        """
+        for i, cell in enumerate(cell_list):
+            try:
+                cell_list[i] = float(cell.replace(",", "."))
+            except ValueError:
+                pass
+        return cell_list
+
     def split_cells(self, cells: list[str]) -> list[str, float]:
         """
         Prepared cells for further hours calculation
@@ -173,12 +188,12 @@ class Worker(Sheet):
         """
         splited_cell_list = []
         for cell in cells:
-            try:
-                new_cell = float(cell.replace(",", "."))
-                splited_cell_list.append(new_cell)
-            except ValueError:
-                new_cell = cell.split()
-                splited_cell_list.extend(new_cell)
+            if len(cell) > 1:
+                splited_cell_list.extend(cell.split())
+            else:
+                splited_cell_list.append(cell)
+
+        splited_cell_list = self.floated_cells(splited_cell_list)
         return splited_cell_list
 
     def count_hours(self, cells_range: list[str]) -> dict:
@@ -258,15 +273,16 @@ class Worker(Sheet):
 
 # for debug
 
-    # def save_filled_sheet(self):
-    #     self.fill_worker_line()
-    #     wb.save(BACKUP_REPORT_CARD_FILE)
+# def save_filled_sheet(self):
+#     self.fill_worker_line()
+#     wb.save(BACKUP_REPORT_CARD_FILE)
 
 
 # file_name = 'табель февраль ГТЦ11.xlsx'
 # report_card_file = pathlib.Path(file_name)
 # wb = load_workbook(filename=report_card_file)
 # worker = Worker('B13', wb[wb.sheetnames[1]])
+# print(worker.get_day_hours())
 # worker_women = Worker('B35', DEM_sheet)
 # worker_women2 = Worker('B37', DEM_sheet)
 

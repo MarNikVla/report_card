@@ -58,6 +58,7 @@ class Ui_MainWindow(object):
     def open_file(self):
         self.file_name = QtWidgets.QFileDialog.getOpenFileName(None, "Open", "",
                                                                "Excel (*.xls *.xlsx)")
+        self.label.setHidden(True)
         if self.file_name[0] != '':
             self.lineEdit.setText(self.file_name[0])
             self.fillButton.setDisabled(False)
