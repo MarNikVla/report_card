@@ -116,7 +116,8 @@ class Worker(Sheet):
         To account for the days that are included in the norm of hours
         :return: list of days without days_to_remove
         """
-        days_to_remove = ['ОТ', 'У', 'ДО', 'Б', 'К', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ', 'НОД']
+        days_to_remove = ['ОТ', 'У', 'ДО', 'Б', 'К', 'Р', 'ОЖ', 'ОЗ', 'Г', 'НН', 'НБ', 'НОД', 'ОВ',
+                          'ПР']
         normalize_workdays = deepcopy(self._work_days_matrix)
         for index, cell in enumerate(self.cells_range):
             if cell in days_to_remove:
