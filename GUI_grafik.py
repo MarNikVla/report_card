@@ -3,7 +3,7 @@ import sys
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import Qt
 
-from main import save_file
+from main_grafik import save_file
 
 
 class Ui_MainWindow(object):
@@ -50,7 +50,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "Заполнение табелей"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "Заполнение графиков"))
         self.choiceButton.setText(_translate("MainWindow", "Выберите файл"))
         self.fillButton.setText(_translate("MainWindow", "Заполнить"))
         self.label.setText(_translate("MainWindow", "TextLabel"))
