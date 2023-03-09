@@ -41,7 +41,8 @@ class Sheet:
             return short_day
         return working_day
 
-    @cached_property
+    # @cached_property
+    @property
     def _work_days_matrix(self) -> list:
         """
         Create list of type of days in month (working_day, weekend, holiday, short_day)
@@ -71,6 +72,9 @@ class Worker(Sheet):
         super().__init__(sheet)
         self.cell = sheet[cell_index]
 
+    def name(self):
+        return self.cell.value
+
     @property
     def cells_range(self) -> list:
         """
@@ -88,6 +92,7 @@ class Worker(Sheet):
             for cell in row:
                 if cell.value not in (None, 'Х'):
                     cells_range.append(cell.value)
+        # print(cells_range)
         return cells_range
 
     @cached_property
@@ -189,6 +194,7 @@ class Worker(Sheet):
         """
         splited_cell_list = []
         for cell in cells:
+            # print(type(cell))
             if len(cell) > 1:
                 splited_cell_list.extend(cell.split())
             else:
@@ -279,22 +285,29 @@ class Worker(Sheet):
 #     wb.save(BACKUP_REPORT_CARD_FILE)
 
 
-# file_name = 'табель февраль ГТЦ11.xlsx'
-# report_card_file = pathlib.Path(file_name)
-# wb = load_workbook(filename=report_card_file)
-# worker = Worker('B13', wb[wb.sheetnames[1]])
-# print(worker.get_day_hours())
+file_name = 'табель февраль ГТЦ1.xlsx'
+report_card_file = pathlib.Path(file_name)
+wb = load_workbook(filename=report_card_file)
+worker = Worker('B23', wb[wb.sheetnames[1]])
+print(worker.get_day_hours())
 # worker_women = Worker('B35', DEM_sheet)
 # worker_women2 = Worker('B37', DEM_sheet)
 
-
-# print(worker.counter_of_days)
+print(worker.name())
+print(worker.counter_of_days)
+print(worker.cells_range)
 # print(worker.split_cells())
-# print(worker.get_weekends())
-# print(worker.get_overwork())
-# print(worker.get_day_hours())
-# print(worker.get_night_hours())
-# print(worker.norm_of_hours)
-# print(worker._normalize_workdays)
-# print(worker._work_days_matrix)
+print(f'явки (дней): {worker.get_attendance_days()}')
+print(f'урочно (часов):{worker.get_day_hours()}')
+print(f'ночные (чачов):{worker.get_night_hours()}')
+print(f'праздничные (часов):{worker.get_holidays_hours()}')
+print(f'выходные (дней):{worker.get_weekends()}')
+print(f'отпуск (дней):{worker.get_vacation_days()}')
+print(f'болничный (дней):{worker.get_medical_days()}')
+print(f'прочие неявки (дней):{worker.get_other_days_off()}')
+print(f'переработка (часов):{worker.get_overwork()}')
+
+print(f'норма часов  {worker.norm_of_hours}')
+print(worker._normalize_workdays)
+print(worker._work_days_matrix)
 # print(worker.save_filled_sheet())
