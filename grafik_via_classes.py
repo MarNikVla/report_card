@@ -7,7 +7,7 @@ from functools import cached_property, partial
 from openpyxl import load_workbook
 from openpyxl.cell import Cell
 
-
+DAYS_TO_REMOVE = (None, 'X', 'Х')
 class Sheet:
     """
     represents sheet of excel file, methods and attributes of them
@@ -57,7 +57,7 @@ class Sheet:
                                         min_col=first_day_of_month.column,
                                         max_col=last_day_of_month.column):
             for cell in row:
-                if cell.value not in (None, 'X'):
+                if cell.value not in DAYS_TO_REMOVE:
                     work_days_matrix.append(self._type_of_day(cell))
         return work_days_matrix
 
@@ -86,8 +86,8 @@ class Worker(Sheet):
                                         min_col=self.cell.column + 2,
                                         max_col=self.cell.column + 32):
             for cell in row:
-                if cell.value not in (None, 'Х'):
-                    cells_range.append(cell.value)
+                if cell.value not in DAYS_TO_REMOVE:
+                    cells_range.append(str(cell.value))
         return cells_range
 
     # @cached_property

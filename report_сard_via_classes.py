@@ -7,7 +7,7 @@ from functools import cached_property, partial
 from openpyxl import load_workbook
 from openpyxl.cell import Cell
 
-
+DAYS_TO_REMOVE = (None, 'X', 'Х')
 class Sheet:
     """
     represents sheet of excel file, methods and attributes of them
@@ -58,8 +58,9 @@ class Sheet:
                                         min_col=first_day_of_month.column,
                                         max_col=last_day_of_month.column):
             for cell in row:
-                if cell.value not in (None, 'X'):
+                if cell.value not in DAYS_TO_REMOVE:
                     work_days_matrix.append(self._type_of_day(cell))
+        # print(work_days_matrix)
         return work_days_matrix
 
 
@@ -90,9 +91,11 @@ class Worker(Sheet):
                                         min_col=self.cell.column + 1,
                                         max_col=self.cell.column + 16):
             for cell in row:
-                if cell.value not in (None, 'Х'):
-                    cells_range.append(cell.value)
-        # print(cells_range)
+                # print(type(cell.value))
+                if cell.value not in DAYS_TO_REMOVE:
+                    cells_range.append(str(cell.value))
+        # print(f'cell_range - {cells_range}')
+        # print(len(cells_range))
         return cells_range
 
     @cached_property
@@ -285,29 +288,28 @@ class Worker(Sheet):
 #     wb.save(BACKUP_REPORT_CARD_FILE)
 
 
-file_name = 'табель февраль ГТЦ1.xlsx'
-report_card_file = pathlib.Path(file_name)
-wb = load_workbook(filename=report_card_file)
-worker = Worker('B23', wb[wb.sheetnames[1]])
-print(worker.get_day_hours())
-# worker_women = Worker('B35', DEM_sheet)
-# worker_women2 = Worker('B37', DEM_sheet)
+# file_name = 'табель февраль ГТЦ1.xlsx'
+# report_card_file = pathlib.Path(file_name)
+# wb = load_workbook(filename=report_card_file)
+# worker = Worker('B17', wb[wb.sheetnames[0]])
+# print(worker.get_day_hours())
+#
+#
+# print(worker.name())
+# print(worker.counter_of_days)
+# print(worker.cells_range)
+# print(f'явки (дней): {worker.get_attendance_days()}')
+# print(f'урочно (часов):{worker.get_day_hours()}')
+# print(f'ночные (чачов):{worker.get_night_hours()}')
+# print(f'праздничные (часов):{worker.get_holidays_hours()}')
+# print(f'выходные (дней):{worker.get_weekends()}')
+# print(f'отпуск (дней):{worker.get_vacation_days()}')
+# print(f'болничный (дней):{worker.get_medical_days()}')
+# print(f'прочие неявки (дней):{worker.get_other_days_off()}')
+# print(f'переработка (часов):{worker.get_overwork()}')
+# print(worker._work_days_matrix)
+#
+# print(f'норма часов  {worker.norm_of_hours}')
+# print(worker._normalize_workdays)
 
-print(worker.name())
-print(worker.counter_of_days)
-print(worker.cells_range)
-# print(worker.split_cells())
-print(f'явки (дней): {worker.get_attendance_days()}')
-print(f'урочно (часов):{worker.get_day_hours()}')
-print(f'ночные (чачов):{worker.get_night_hours()}')
-print(f'праздничные (часов):{worker.get_holidays_hours()}')
-print(f'выходные (дней):{worker.get_weekends()}')
-print(f'отпуск (дней):{worker.get_vacation_days()}')
-print(f'болничный (дней):{worker.get_medical_days()}')
-print(f'прочие неявки (дней):{worker.get_other_days_off()}')
-print(f'переработка (часов):{worker.get_overwork()}')
-
-print(f'норма часов  {worker.norm_of_hours}')
-print(worker._normalize_workdays)
-print(worker._work_days_matrix)
 # print(worker.save_filled_sheet())
