@@ -1,0 +1,1 @@
+pyinstaller --onefile --noconsole  --name grafik GUI_grafik.py --clean

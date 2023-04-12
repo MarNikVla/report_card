@@ -7,8 +7,8 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from grafik_via_classes import Worker
 
-INITIAL_ROW_OF_NAMES: int = 15
-FINAL_ROW_OF_NAMES: int = 37
+INITIAL_ROW_OF_NAMES: int = 14
+FINAL_ROW_OF_NAMES: int = 36
 COLUMN_OF_NAMES: int = 2
 MAKE_BACKUP = True
 
@@ -62,5 +62,5 @@ def save_file(file_name):
     wb.save(report_card_file)
 
 
-# file_name2 = '(ГРАФИК РАБОТЫ) январь.xlsx'
+# file_name2 = '(ГРАФИК РАБОТЫ) май.xlsx'
 # save_file(file_name2)

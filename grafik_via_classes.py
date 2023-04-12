@@ -8,6 +8,8 @@ from openpyxl import load_workbook
 from openpyxl.cell import Cell
 
 DAYS_TO_REMOVE = (None, 'X', 'Х')
+
+
 class Sheet:
     """
     represents sheet of excel file, methods and attributes of them
@@ -70,6 +72,9 @@ class Worker(Sheet):
     def __init__(self, cell_index, sheet):
         super().__init__(sheet)
         self.cell = sheet[cell_index]
+
+    def __str__(self):
+        return f'{self.cell.value}'
 
     @property
     def cells_range(self) -> list:
@@ -250,6 +255,7 @@ class Worker(Sheet):
         fill cells with calculation results
         :return:
         """
+        # print(self)
         offset_row = 0
         # offset_column_attendance = 17
         offset_column_day_hours = 33
@@ -274,14 +280,14 @@ class Worker(Sheet):
 
 
 # file_name = 'табель февраль ГТЦ11.xlsx'
-# file_name2 = '(ГРАФИК РАБОТЫ) январь.xlsx'
+# file_name2 = '(ГРАФИК РАБОТЫ) май.xlsx'
 # report_card_file = pathlib.Path(file_name2)
 # wb = load_workbook(filename=report_card_file)
-# worker = Worker('B24', wb[wb.sheetnames[0]])
-
-
-
-
+# worker = Worker('B22', wb[wb.sheetnames[1]])
+#
+#
+#
+#
 # print(worker.cell)
 # print(worker.get_holidays_hours())
 # print(worker.get_overwork())
