@@ -5,12 +5,18 @@ from typing import Type
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
-from report_сard_via_classes import Worker
+from report_сard_via_classes_new import Worker
 
 INITIAL_ROW_OF_NAMES: int = 13
 FINAL_ROW_OF_NAMES: int = 49
 COLUMN_OF_NAMES: int = 2
 MAKE_BACKUP = True
+
+def get_initial_row(sheet: Type[Worksheet]) -> int:
+    for row in sheet.iter_rows(min_col=COLUMN_OF_NAMES-1,
+                               max_col=COLUMN_OF_NAMES-1,
+                               values_only=True):
+        print(row)
 
 
 @lru_cache
@@ -26,7 +32,7 @@ def get_workers(sheet: Type[Worksheet]) -> list[Worker]:
     for col in sheet.iter_cols(min_row=INITIAL_ROW_OF_NAMES,
                                max_row=FINAL_ROW_OF_NAMES,
                                min_col=COLUMN_OF_NAMES,
-                               max_col=COLUMN_OF_NAMES):
+                               max_col=COLUMN_OF_NAMES,):
         for cell in col:
             if cell.value is not None:
                 workers_list.append(Worker(cell.coordinate, sheet))
@@ -61,3 +67,39 @@ def save_file(file_name):
         fill_all_workers(get_workers(sheet))
     wb.save(report_card_file)
 
+
+
+# def save_filled_sheet(self):
+#     self.fill_worker_line()
+#     wb.save(BACKUP_REPORT_CARD_FILE)
+
+
+file_name = 'табель июнь ГТЦ новый вариант — копия.xlsx'
+report_card_file = pathlib.Path(file_name)
+wb = load_workbook(filename=report_card_file)
+# wokers = get_workers(wb[wb.sheetnames[0]])
+initial_row = get_initial_row(wb[wb.sheetnames[0]])
+print(f'initial row: {initial_row}')
+
+
+# worker = Worker('B21', wb[wb.sheetnames[1]])
+# print(worker.get_day_hours())
+#
+# print(worker.name())
+# print(worker.counter_of_days)
+# print(worker.cells_range)
+# print(f'явки (дней): {worker.get_attendance_days()}')
+# print(f'урочно (часов):{worker.get_day_hours()}')
+# print(f'ночные (чачов):{worker.get_night_hours()}')
+# print(f'праздничные (часов):{worker.get_holidays_hours()}')
+# print(f'выходные (дней):{worker.get_weekends()}')
+# print(f'отпуск (дней):{worker.get_vacation_days()}')
+# print(f'болничный (дней):{worker.get_medical_days()}')
+# print(f'прочие неявки (дней):{worker.get_other_days_off()}')
+# print(f'переработка (часов):{worker.get_overwork()}')
+# print(worker._work_days_matrix)
+#
+# print(f'норма часов  {worker.norm_of_hours}')
+# print(worker._normalize_workdays)
+
+# print(worker.save_filled_sheet())
