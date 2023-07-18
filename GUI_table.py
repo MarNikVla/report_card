@@ -57,7 +57,7 @@ class Ui_MainWindow(object):
 
     def open_file(self):
         self.file_name = QtWidgets.QFileDialog.getOpenFileName(None, "Open", "",
-                                                               "Excel (*.xls *.xlsx)")
+                                                               "Excel (*.xls *.xlsx *.xlsm)")
         self.label.setHidden(True)
         if self.file_name[0] != '':
             self.lineEdit.setText(self.file_name[0])

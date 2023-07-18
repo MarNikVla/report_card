@@ -7,7 +7,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from report_сard_via_classes_new import Worker
 
-INITIAL_ROW_OF_NAMES: int = 13
+INITIAL_ROW_OF_NAMES: int = 16
 FINAL_ROW_OF_NAMES: int = 49
 COLUMN_OF_NAMES: int = 2
 MAKE_BACKUP = True
@@ -16,7 +16,8 @@ def get_initial_row(sheet: Type[Worksheet]) -> int:
     for row in sheet.iter_rows(min_col=COLUMN_OF_NAMES-1,
                                max_col=COLUMN_OF_NAMES-1,
                                values_only=True):
-        print(row)
+        pass
+        # print(row)
 
 
 @lru_cache
@@ -54,7 +55,7 @@ def make_backup(file_name):
 
 def save_file(file_name):
     """
-    save excel file with calculation results and do backup
+    save Excel file with calculation results and do backup
     :param file_name: name of exel file
     :return:
     """
@@ -69,20 +70,21 @@ def save_file(file_name):
 
 
 
-# def save_filled_sheet(self):
-#     self.fill_worker_line()
-#     wb.save(BACKUP_REPORT_CARD_FILE)
 
+# for debug
 
-file_name = 'табель июнь ГТЦ новый вариант — копия.xlsx'
-report_card_file = pathlib.Path(file_name)
-wb = load_workbook(filename=report_card_file)
-# wokers = get_workers(wb[wb.sheetnames[0]])
-initial_row = get_initial_row(wb[wb.sheetnames[0]])
-print(f'initial row: {initial_row}')
+# file_name = 'табель июль ГТЦ новый вариант.xlsx'
+# save_file(file_name)
 
-
-# worker = Worker('B21', wb[wb.sheetnames[1]])
+# file_name = 'табель июль ГТЦ новый вариант.xlsx'
+# report_card_file = pathlib.Path(file_name)
+# wb = load_workbook(filename=report_card_file)
+# # initial_row = get_initial_row(wb[wb.sheetnames[0]])
+# # print(f'initial row: {initial_row}')
+#
+#
+# worker = Worker('B22', wb[wb.sheetnames[1]])
+# print(worker.name())
 # print(worker.get_day_hours())
 #
 # print(worker.name())

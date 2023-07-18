@@ -9,6 +9,10 @@ from openpyxl.cell import Cell
 
 DAYS_TO_REMOVE = (None, 'X', 'Х')
 
+FIRST_DAY_OF_MONTH = 'C13'
+LAST_DAY_OF_MONTH = 'R14'
+
+
 
 class Sheet:
     """
@@ -52,8 +56,8 @@ class Sheet:
         example: ['П', 'В', 'В', 'РД', 'РД', 'РД', 'В', 'В', 'П', 'В', 'РД', 'РД', 'РД']
                 meaning: first day of the month - 'П', second day of the month - 'В', etc
         """
-        first_day_of_month = self.sheet['C10']
-        last_day_of_month = self.sheet['R11']
+        first_day_of_month = self.sheet[FIRST_DAY_OF_MONTH]
+        last_day_of_month = self.sheet[LAST_DAY_OF_MONTH]
         work_days_matrix = list()
         for row in self.sheet.iter_rows(min_row=first_day_of_month.row,
                                         max_row=last_day_of_month.row,
@@ -230,7 +234,7 @@ class Worker(Sheet):
             elif i == '2\\2':
                 all_hours += 4 * counter_of_hours[i]
                 night_hours += 2 * counter_of_hours[i]
-            elif i == '6\\2':
+            elif i == '2\\6':
                 all_hours += 8 * counter_of_hours[i]
                 night_hours += 6 * counter_of_hours[i]
             elif i == '8':
@@ -295,32 +299,36 @@ class Worker(Sheet):
 
 # for debug
 
-# def save_filled_sheet(self):
-#     self.fill_worker_line()
-#     wb.save(BACKUP_REPORT_CARD_FILE)
-
-
-file_name = 'табель июнь ГТЦ новый вариант — копия.xlsx'
-report_card_file = pathlib.Path(file_name)
-wb = load_workbook(filename=report_card_file)
-worker = Worker('B21', wb[wb.sheetnames[1]])
-print(worker.get_day_hours())
-
-print(worker.name())
-print(worker.counter_of_days)
-print(worker.cells_range)
-print(f'явки (дней): {worker.get_attendance_days()}')
-print(f'урочно (часов):{worker.get_day_hours()}')
-print(f'ночные (чачов):{worker.get_night_hours()}')
-print(f'праздничные (часов):{worker.get_holidays_hours()}')
-print(f'выходные (дней):{worker.get_weekends()}')
-print(f'отпуск (дней):{worker.get_vacation_days()}')
-print(f'болничный (дней):{worker.get_medical_days()}')
-print(f'прочие неявки (дней):{worker.get_other_days_off()}')
-print(f'переработка (часов):{worker.get_overwork()}')
-print(worker._work_days_matrix)
+    # def save_filled_sheet(self):
+    #     self.fill_worker_line()
+    #     backup_report_card_file = report_card_file.parent.joinpath(
+    #         f'backup_{report_card_file.name}')
+    #     wb.save(backup_report_card_file)
+# worker.save_filled_sheet()
+#
+# #
+# file_name = 'табель июль ГТЦ новый вариант.xlsx'
+# report_card_file = pathlib.Path(file_name)
+# wb = load_workbook(filename=report_card_file)
+# worker = Worker('B24', wb[wb.sheetnames[1]])
+# print(worker.get_day_hours())
+#
+# print(worker.name())
+# print(worker._work_days_matrix)
+# print(worker.counter_of_days)
+# print(worker.cells_range)
+# print(f'явки (дней): {worker.get_attendance_days()}')
+# print(f'урочно (часов):{worker.get_day_hours()}')
+# print(f'ночные (чачов):{worker.get_night_hours()}')
+# print(f'праздничные (часов):{worker.get_holidays_hours()}')
+# print(f'выходные (дней):{worker.get_weekends()}')
+# print(f'отпуск (дней):{worker.get_vacation_days()}')
+# print(f'болничный (дней):{worker.get_medical_days()}')
+# print(f'прочие неявки (дней):{worker.get_other_days_off()}')
+# print(f'переработка (часов):{worker.get_overwork()}')
+# print(worker._work_days_matrix)
 #
 # print(f'норма часов  {worker.norm_of_hours}')
 # print(worker._normalize_workdays)
+#
 
-# print(worker.save_filled_sheet())
