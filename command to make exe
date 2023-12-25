@@ -1,2 +1,2 @@
-pyinstaller --onefile --noconsole  --name grafik GUI_grafik.py --clean
+pyinstaller --onefile --noconsole  --name grafik_1.0.4 GUI_grafik.py --clean
 pyinstaller --onefile --noconsole  --name table_1.0.3 GUI_table.py --clean

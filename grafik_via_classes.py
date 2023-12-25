@@ -72,6 +72,10 @@ class Worker(Sheet):
     def __init__(self, cell_index, sheet):
         super().__init__(sheet)
         self.cell = sheet[cell_index]
+        self.name = self.cell.value
+
+    # def name(self):
+    #     return self.cell.value
 
     def __str__(self):
         return f'{self.cell.value}'
@@ -248,7 +252,7 @@ class Worker(Sheet):
         return count_holiday_hours
 
     def get_overwork(self):
-        return round(self.get_day_hours() - self.norm_of_hours - self.get_holidays_hours(), 1)
+        return round(self.get_day_hours() - self.norm_of_hours, 1)
 
     def fill_worker_line(self):
         """
@@ -272,6 +276,7 @@ class Worker(Sheet):
         cell_offset(column=offset_column_holidays_hours).value = self.get_holidays_hours() or None
         cell_offset(column=offset_column_overwork).value = self.get_overwork() or None
 
+
 # for debug
 
 # def save_filled_sheet(self):
@@ -280,17 +285,26 @@ class Worker(Sheet):
 
 
 # file_name = 'табель февраль ГТЦ11.xlsx'
-# file_name2 = '(ГРАФИК РАБОТЫ) май.xlsx'
+# file_name2 = '(ГРАФИК РАБОТЫ) февраль.xlsx'
 # report_card_file = pathlib.Path(file_name2)
 # wb = load_workbook(filename=report_card_file)
-# worker = Worker('B22', wb[wb.sheetnames[1]])
+# worker = Worker('B14', wb[wb.sheetnames[0]])
 #
 #
 #
 #
 # print(worker.cell)
-# print(worker.get_holidays_hours())
-# print(worker.get_overwork())
-# print(worker.get_day_hours())
-# print(worker.get_night_hours())
-# print(worker.norm_of_hours)
+# print(worker.name)
+#
+# print(f'явки (дней): {worker.get_attendance_days()}')
+# print(f'урочно (часов):{worker.get_day_hours()}')
+# print(f'ночные (чачов):{worker.get_night_hours()}')
+# print(f'праздничные (часов):{worker.get_holidays_hours()}')
+# print(f'выходные (дней):{worker.get_weekends()}')
+# print(f'отпуск (дней):{worker.get_vacation_days()}')
+# print(f'болничный (дней):{worker.get_medical_days()}')
+# print(f'прочие неявки (дней):{worker.get_other_days_off()}')
+# print(f'переработка (часов):{worker.get_overwork()}')
+# print(f'норма часов  {worker.norm_of_hours}')
+# print(worker._work_days_matrix)
+# print(worker._normalize_workdays)
