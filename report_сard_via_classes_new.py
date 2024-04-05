@@ -2,7 +2,7 @@ import itertools
 import pathlib
 from collections import Counter
 from copy import deepcopy
-from functools import cached_property, partial
+from functools import cached_property, partial, lru_cache
 
 from openpyxl import load_workbook
 from openpyxl.cell import Cell
@@ -78,11 +78,11 @@ class Worker(Sheet):
     def __init__(self, cell_index, sheet):
         super().__init__(sheet)
         self.cell = sheet[cell_index]
+        self.name = self.cell.value
 
-    def name(self):
-        return self.cell.value
 
     @property
+    @lru_cache()
     def cells_range(self) -> list:
         """
         represents how many hours the worker worked, rested etc
@@ -100,7 +100,9 @@ class Worker(Sheet):
                 # print(type(cell.value))
                 if cell.value not in DAYS_TO_REMOVE:
                     cells_range.append(str(cell.value))
-        # print(f'cell_range - {cells_range}')
+                # if cell.font.color and cell.font.color.rgb == 'FFFF0000':
+                #
+                #         print(f'cell_font - {cell.font.color.rgb}')
         # print(len(cells_range))
         return cells_range
 
@@ -269,6 +271,9 @@ class Worker(Sheet):
             else:
                 return round(self.get_day_hours() - self.norm_of_hours - self.get_holidays_hours(), 1)
 
+    def get_overwork_real(self):
+        return round(self.get_day_hours() - self.norm_of_hours, 1)
+
     def fill_worker_line(self):
         """
         fill cells with calculation results
@@ -284,6 +289,7 @@ class Worker(Sheet):
         offset_column_medical = 24
         offset_column_other_days_off = 25
         offset_column_overwork = 26
+        offset_column_overwork_real = 28
 
         cell_offset = partial(self.cell.offset, row=offset_row)
         cell_offset(column=offset_column_attendance).value = self.get_attendance_days() or None
@@ -295,6 +301,7 @@ class Worker(Sheet):
         cell_offset(column=offset_column_night_hours).value = self.get_night_hours() or None
         cell_offset(column=offset_column_holidays_hours).value = self.get_holidays_hours() or None
         cell_offset(column=offset_column_overwork).value = self.get_overwork() or None
+        cell_offset(column=offset_column_overwork_real).value = self.get_overwork_real() or None
 
 
 # for debug
@@ -307,13 +314,13 @@ class Worker(Sheet):
 # worker.save_filled_sheet()
 #
 # #
-# file_name = 'табель июль ГТЦ новый вариант.xlsx'
+# file_name = 'табель ноябрь ГТЦ.xlsx'
 # report_card_file = pathlib.Path(file_name)
 # wb = load_workbook(filename=report_card_file)
-# worker = Worker('B24', wb[wb.sheetnames[1]])
+# worker = Worker('B22', wb[wb.sheetnames[1]])
 # print(worker.get_day_hours())
 #
-# print(worker.name())
+# print(worker.name)
 # print(worker._work_days_matrix)
 # print(worker.counter_of_days)
 # print(worker.cells_range)
