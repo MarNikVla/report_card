@@ -100,11 +100,37 @@ class Worker(Sheet):
                 # print(type(cell.value))
                 if cell.value not in DAYS_TO_REMOVE:
                     cells_range.append(str(cell.value))
+
+
+                # print(f'cell_font - {cell.font.color}')
+        # print(len(cells_range))
+        return cells_range
+    @lru_cache()
+    def get_cells_range_work_by_order(self) -> dict:
+        """
+        represents how many hours the worker worked, rested etc
+        :return: list of cell range of worker filled in by user of program
+        example: ['В', 'В', '8/20', '8/20', 'В', '20/', '/8   20/', '/8', 'В', 'В', '8/20' ...]
+                meaning: first day of the month - 'В'(weekend), second day of the month - 'В', etc
+
+        """
+        cells_range_work_by_order = dict()
+        for row in self.sheet.iter_rows(min_row=self.cell.row,
+                                        max_row=self.cell.row + 1,
+                                        min_col=self.cell.column + 1,
+                                        max_col=self.cell.column + 16):
+            for i, cell in enumerate(row):
+                # print(type(cell.value))
+                if cell.value not in DAYS_TO_REMOVE:
+
+                    if cell.font.color and cell.font.color.rgb == 'FFFF0000':
+                        # print('sdfsd')
+                        cells_range_work_by_order[i]=(str(cell.value))
                 # if cell.font.color and cell.font.color.rgb == 'FFFF0000':
                 #
                 #         print(f'cell_font - {cell.font.color.rgb}')
         # print(len(cells_range))
-        return cells_range
+        return cells_range_work_by_order
 
     @cached_property
     def is_28_hours_week(self):
@@ -258,7 +284,6 @@ class Worker(Sheet):
         for i, cell in enumerate(self.cells_range):
             if self._normalize_workdays[i] == 'П':
                 holidays_range.append(cell)
-
         count_holiday_hours = self.count_hours(holidays_range)['all_hours']
         return count_holiday_hours
 
