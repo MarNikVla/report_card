@@ -106,7 +106,7 @@ class Worker(Sheet):
         # print(len(cells_range))
         return cells_range
     @lru_cache()
-    def get_cells_range_work_by_order(self) -> dict:
+    def get_cells_range_work_by_order(self) -> list[tuple]:
         """
         represents how many hours the worker worked, rested etc
         :return: list of cell range of worker filled in by user of program
@@ -114,23 +114,43 @@ class Worker(Sheet):
                 meaning: first day of the month - 'В'(weekend), second day of the month - 'В', etc
 
         """
-        cells_range_work_by_order = dict()
-        for row in self.sheet.iter_rows(min_row=self.cell.row,
-                                        max_row=self.cell.row + 1,
-                                        min_col=self.cell.column + 1,
-                                        max_col=self.cell.column + 16):
+        cells_range_work_by_order = list()
+        for row in itertools.chain(self.sheet.iter_rows(min_row=self.cell.row,
+                                                                      max_row=self.cell.row + 1,
+                                                                      min_col=self.cell.column + 1,
+                                                                      max_col=self.cell.column + 16)):
+            print(row)
             for i, cell in enumerate(row):
                 # print(type(cell.value))
                 if cell.value not in DAYS_TO_REMOVE:
+                    pass
 
                     if cell.font.color and cell.font.color.rgb == 'FFFF0000':
                         # print('sdfsd')
-                        cells_range_work_by_order[i]=(str(cell.value))
+                        cells_range_work_by_order.append((i, str(cell.value)))
+                        print(f'cell_font - {cell.font.color.rgb}')
+        cells_range_work_by_order.append(('last', i+15))
                 # if cell.font.color and cell.font.color.rgb == 'FFFF0000':
                 #
-                #         print(f'cell_font - {cell.font.color.rgb}')
+
         # print(len(cells_range))
         return cells_range_work_by_order
+
+    def get_holidays_hours_by_order(self):
+        holidays_hours_by_order = 0
+        temp= 0
+        cells_range_work_by_order = self.get_cells_range_work_by_order()
+        for i, j in cells_range_work_by_order:
+            # if cells_range_work_by_order[i] == '12\\0':
+            #     holidays_hours_by_order +=12
+            # else:
+            #     pass
+
+
+            print(i, j)
+            pass
+
+
 
     @cached_property
     def is_28_hours_week(self):
@@ -281,9 +301,12 @@ class Worker(Sheet):
 
     def get_holidays_hours(self):
         holidays_range = list()
+        cells_range_work_by_order = self.get_cells_range_work_by_order()
         for i, cell in enumerate(self.cells_range):
             if self._normalize_workdays[i] == 'П':
                 holidays_range.append(cell)
+                # cells_range_work_by_order[i] = (str(cell))
+                # print(cells_range_work_by_order)
         count_holiday_hours = self.count_hours(holidays_range)['all_hours']
         return count_holiday_hours
 
