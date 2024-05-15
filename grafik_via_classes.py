@@ -284,8 +284,8 @@ class Worker(Sheet):
 #     wb.save(BACKUP_REPORT_CARD_FILE)
 
 
-# file_name = 'табель февраль ГТЦ11.xlsx'
-# file_name2 = '(ГРАФИК РАБОТЫ) февраль.xlsx'
+
+# file_name2 = '(ГРАФИК РАБОТЫ) май.xlsx'
 # report_card_file = pathlib.Path(file_name2)
 # wb = load_workbook(filename=report_card_file)
 # worker = Worker('B14', wb[wb.sheetnames[0]])

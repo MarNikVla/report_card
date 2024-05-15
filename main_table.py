@@ -99,7 +99,7 @@ print(f'прочие неявки (дней):{worker.get_other_days_off()}')
 print(f'переработка (часов):{worker.get_overwork()}')
 print(f'переработка реальная (часов):{worker.get_overwork_real()}')
 print(worker._work_days_matrix)
-print(f'праздничные по приказу (часов):{worker.get_holidays_hours_by_order()}')
+
 
 print(f'норма часов  {worker.norm_of_hours}')
 print(worker._normalize_workdays)

@@ -115,40 +115,45 @@ class Worker(Sheet):
 
         """
         cells_range_work_by_order = list()
-        for row in itertools.chain(self.sheet.iter_rows(min_row=self.cell.row,
+        day_count = 0
+        for row in self.sheet.iter_rows(min_row=self.cell.row,
                                                                       max_row=self.cell.row + 1,
                                                                       min_col=self.cell.column + 1,
-                                                                      max_col=self.cell.column + 16)):
-            print(row)
+                                                                      max_col=self.cell.column + 16):
             for i, cell in enumerate(row):
+                # print(i)
                 # print(type(cell.value))
                 if cell.value not in DAYS_TO_REMOVE:
-                    pass
+                    day_count+=1
 
                     if cell.font.color and cell.font.color.rgb == 'FFFF0000':
                         # print('sdfsd')
                         cells_range_work_by_order.append((i, str(cell.value)))
-                        print(f'cell_font - {cell.font.color.rgb}')
-        cells_range_work_by_order.append(('last', i+15))
+                        # print(f'cell_font - {cell.font.color.rgb}')
+        cells_range_work_by_order.append(('last', day_count))
+        # print(day_count)
+            # cells_range_work_by_order.append(('last', i+15))
                 # if cell.font.color and cell.font.color.rgb == 'FFFF0000':
                 #
 
         # print(len(cells_range))
         return cells_range_work_by_order
 
-    def get_holidays_hours_by_order(self):
-        holidays_hours_by_order = 0
-        temp= 0
-        cells_range_work_by_order = self.get_cells_range_work_by_order()
-        for i, j in cells_range_work_by_order:
-            # if cells_range_work_by_order[i] == '12\\0':
-            #     holidays_hours_by_order +=12
-            # else:
-            #     pass
-
-
-            print(i, j)
-            pass
+    # def get_holidays_hours_by_order(self):
+    #     holidays_hours_by_order = 0
+    #     temp= 0
+    #     cells_range_work_by_order = self.get_cells_range_work_by_order()
+    #     if cells_range_work_by_order[0][0] == 0:
+    #
+    #     for i, j in cells_range_work_by_order:
+    #         if cells_range_work_by_order[i] == '12\\0':
+    #             holidays_hours_by_order += 12
+    #         # else:
+    #         #     pass
+    #
+    #
+    #         print(i, j)
+    #         pass
 
 
 
